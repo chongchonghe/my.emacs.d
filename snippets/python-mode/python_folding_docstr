@@ -1,0 +1,8 @@
+# -*- mode: snippet -*-
+# Insert my own Python folding doc string, to comment a block a code
+# name: Python folding doc string start
+# key: #<
+# type: snippet
+# contributor: Chong-Chong He
+# --
+#<<< Start of $1 >>>#

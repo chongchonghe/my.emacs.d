@@ -1,0 +1,199 @@
+;; This is rename from a file .emacs.bk. 
+
+(require 'package)
+
+(add-to-list 'package-archives
+             '("MELPA Stable" . "https://stable.melpa.org/packages/") t)
+(add-to-list 'package-archives
+       '("elpy" . "http://jorgenschaefer.github.io/packages/"))
+
+(package-initialize)
+(when (not package-archive-contents)
+  (package-refresh-contents))
+
+(defvar myPackages
+  '(better-defaults
+    ein
+    elpy
+    flycheck
+    spolky
+    py-autopep8))
+
+;; General setup, just copy and paste
+;; ---------------------------------------------------------------
+(setq inhibit-startup-message t) ;; hide the startup message
+
+(global-linum-mode t) ;; enable line numbers globally
+(add-hook 'prog-mode-hook 'column-number-mode) 
+(add-hook 'prog-mode-hook 'linum-mode) ;; enable (line number, col number)
+
+(windmove-default-keybindings)          ;; e.g. Shift-arrow to swith windows
+
+(global-set-key (kbd "C-x p") (kbd "C-- C-x o")) ;; make swithing windows easier
+(global-set-key (kbd "C-x n") (kbd "C-x o"))
+(global-set-key (kbd "M-p") (kbd "C-- C-x o"))
+(global-set-key (kbd "M-n") (kbd "C-x o"))
+
+(setq default-fill-column 80)
+
+
+;; Auto insert mode
+(auto-insert-mode)
+(setq auto-insert-directory "~/.emacs.d/mytemplates") ;;; Or use custom, *NOTE* Trailing slash important
+(setq auto-insert-query nil) ;;; If you don't want to be prompted before insertion
+(define-auto-insert "\.py" "my-python-template.py")
+;; (define-auto-insert "\.php" "my-php-template.php")
+
+;; kill/copy whole line
+(defun slick-cut (beg end)
+  (interactive
+   (if mark-active
+       (list (region-beginning) (region-end))
+     (list (line-beginning-position) (line-beginning-position 2)))))
+
+(advice-add 'kill-region :before #'slick-cut)
+
+(defun slick-copy (beg end)
+  (interactive
+   (if mark-active
+       (list (region-beginning) (region-end))
+     (message "Copied line")
+     (list (line-beginning-position) (line-beginning-position 2)))))
+
+(advice-add 'kill-ring-save :before #'slick-copy)
+
+
+;; Fortran mode, just copy and paste
+;; ---------------------------------------------------------------
+(autoload 'f90-mode "f90" "Fortran 90 mode" t)
+(add-hook 'f90-mode-hook 'my-f90-mode-hook)
+(add-hook 'f90-mode-hook 'auto-fill-mode)
+
+(defun my-f90-mode-hook ()
+  (setq f90-font-lock-keywords f90-font-lock-keywords-3)
+  (abbrev-mode 1)                       ; turn on abbreviation mode
+  (turn-on-font-lock)                   ; syntax highlighting
+  (auto-fill-mode 0))                   ; turn off auto-filling
+
+
+;; C/C++, just copy and paste
+;; ---------------------------------------------------------------
+(add-hook 'c-mode-common-hook
+	    (lambda ()
+	      (when (and (derived-mode-p 'c-mode 'c++-mode 'java-mode) (require 'ggtags nil 'noerror))
+		(ggtags-mode 1))))
+;; C template
+;; https://stackoverflow.com/questions/433194/starting-any-emacs-buffer-with-a-c-extension-with-a-template
+(define-skeleton c-throwaway
+  "Throwaway C skeleton"
+  nil
+  "#include <stdio.h>\n"
+  "#include <stdlib.h>\n"
+  "\n"
+  "int main(void){\n"
+  "  \n"
+  "  return 0;\n"
+  "}\n")
+
+(define-auto-insert "\\.\\([Cc]\\|cc\\|cpp\\)\\'" 'c-throwaway)
+
+
+;; neotree. Use M-x package-list-packages to install neotree
+;; before copying the following lines.
+;; ---------------------------------------------------------------
+(defun my-neotree-config ()
+  "For use in 'neotree-mode-hook'."
+  (local-set-key (kbd "j") 'neotree-next-line)
+  (local-set-key (kbd "k") 'neotree-previous-line)
+  (local-set-key (kbd "C-j") 'neotree-window-down)
+  (local-set-key (kbd "C-k") 'neotree-window-up)
+)
+
+(add-hook 'neotree-mode-hook 'my-neotree-config)
+
+
+;; Python, just copy and paste
+;; ---------------------------------------------------------------
+(elpy-enable)
+(elpy-use-ipython)
+
+(when (require 'flycheck nil t)
+  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
+  (add-hook 'elpy-mode-hook 'flycheck-mode))
+
+;;(require 'py-autopep8)
+;; (add-hook 'elpy-mode-hook) ;;'py-autopep8-enable-on-save)
+
+(setq python-shell-interpreter "ipython"
+      python-shell-interpreter-args "--simple-prompt -i")
+
+;; Auto insert mode
+;; (define-auto-insert "\.py" "my-python-template.py")
+
+
+;; Evil mode
+;; --------------------------------------------------------------
+(add-to-list 'load-path "~/.emacs.d/evil")
+(require 'evil)
+;; (evil-mode 1)
+
+;; Use neotree with evil mode
+(evil-define-key 'normal neotree-mode-map (kbd "TAB") 'neotree-enter)
+(evil-define-key 'normal neotree-mode-map (kbd "SPC") 'neotree-quick-look)
+(evil-define-key 'normal neotree-mode-map (kbd "q") 'neotree-hide)
+(evil-define-key 'normal neotree-mode-map (kbd "RET") 'neotree-enter)
+
+
+;; Hide-show
+;; ---------------------------------------------------------------
+;; (hs-minor-mode 1)
+(defun my-hideshow-config ()
+  "For use in 'hs-minor-mode-hook'."
+  (local-set-key (kbd "C-c p") 'hs-toggle-hiding)
+  (local-set-key (kbd "C-c h") 'hs-hide-all)
+  (local-set-key (kbd "C-c s") 'hs-show-all)
+
+)
+
+(add-hook 'python-mode-hook 'hs-minor-mode)
+(add-hook 'hs-minor-mode-hook 'my-hideshow-config)
+
+;; Latex
+;; ---------------------------------------------------------------
+(setq TeX-auto-save t)
+(setq TeX-parse-self t)
+(setq-default TeX-master nil)
+(setq TeX-PDF-mode t)			; Compile documents to PDF by default
+
+
+;; (require 'insert-time)
+;; (define-key global-map [(control c)(d)] 'insert-date-time)
+;; (define-key global-map [(control c)(control v)(d)] 'insert-personal-time-stamp)
+
+(add-to-list 'custom-theme-load-path "~/.emacs.d/themes")
+(load-theme 'spolsky t)
+(set-face-attribute 'default (selected-frame) :height 160)
+(add-to-list 'default-frame-alist '(height . 68))
+(add-to-list 'default-frame-alist '(width . 120))
+
+;; Customed theme, be careful. Just copy and paste
+;; ---------------------------------------------------------------
+;; (custom-set-faces
+;;  ;; custom-set-faces was added by Custom.
+;;  ;; If you edit it by hand, you could mess it up, so be careful.
+;;  ;; Your init file should contain only one such instance.
+;;  ;; If there is more than one, they won't work right.
+;;  '(default ((t (:inherit nil :stipple nil :background "#dcc7b4" :foreground "#1e1e1e" :vertical-boarder "#1e1e1e" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 274 :width normal :foundry "nil" :family "MONACO")))))
+
+;; :background "#dcc7b4" :foreground "#1e1e1e"
+
+;;  :background "#D4A984" :foreground "#38302B"
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (goto-last-change evil auctex evil-visual-mark-mode markdown-mode flycheck neotree elpy))))
+

@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+#name : sequence diagram arrow
+#key : ->
+#contributor : Chong-Chong He
+# --
+$1 -> $2:
+#0

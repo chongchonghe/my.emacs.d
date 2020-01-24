@@ -1,0 +1,36 @@
+# -*- mode: snippet -*-
+#name : my python template
+#key : python
+#type : command
+#binding: C-c t
+#contributor : Chong-Chong He
+# --
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""imf.py
+${1:What does this file do?}
+
+Attributes
+----------
+${2:Classes and functions defined}
+
+Example
+-------
+$3
+
+Notes
+-----
+$4
+
+"""
+
+#-----------------------------------------------------------------------------
+#    Author: Chong-Chong He
+#    Data: `(format-time-string "%Y-%m-%d")`
+#-----------------------------------------------------------------------------
+
+from __future__ import division, print_function
+import numpy as np
+import matplotlib.pyplot as plt
+
+$0

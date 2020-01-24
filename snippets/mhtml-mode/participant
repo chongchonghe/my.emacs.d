@@ -1,0 +1,5 @@
+# -*- mode: snippet -*-
+# name: sequence diagram: participant
+# key: par
+# --
+participant $0

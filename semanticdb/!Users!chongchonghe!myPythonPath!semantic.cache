@@ -1,0 +1,308 @@
+;; Object semanticdb-project-database-file
+;; SEMANTICDB Tags save file
+(semanticdb-project-database-file "semanticdb-project-database-file"
+  :tables
+  (list
+    (semanticdb-table "semanticdb-table"
+      :major-mode python-mode
+      :tags 
+        '( ("\"\"\"imf.py
+Convenient and effective routines for plotting with matplotlib.
+- Adapted from Laurens Keek, 2010
+
+Attributes
+----------
+Useful variables:
+    fig_width, fig_height, fig_size, mycolors, mymarkers, 
+
+Functions:
+    sized_figure(rows=1, columns=1, left=True, right=False, top=False,
+        bottom=True, sharex=True, sharey=True, yscale=1.0)
+    set_margin(figsize=None, left=True, right=False, top=False, bottom=True)
+    set_plotdir(path)
+    save_plot(filename, is_tight=False, **kwargs)
+    get_dashes(number)
+    ensure_list(arg)
+    dual_yticks(axes=None)
+    clean_sharex(axes=None)
+    clean_sharey(axes=None)
+    tick_only(ax, bottom=False, left=False)
+    shared_ylabel(axes, text=None)
+    shared_xlabel(axes=None, text=None)
+    color_axes(color, ax=None)
+    color_colorbar(color, cb)
+
+Example
+-------
+1 x 1 figure with x and y labels, no title:
+>>> import plotutils
+>>> import matplotlib.pyplot as plt
+>>> f, ax = plotutils.sized_figure()
+
+3 x 1 figure
+>>> f, ax = plotutils.sized_figure(3, 1)
+
+Notes
+-----
+
+
+\"\"\"" code nil nil [25 1059])
+            ("matplotlib" include nil nil [1270 1287])
+            ("pylab" include nil nil [1288 1307])
+            ("reduce_plot" include nil nil [1308 1326])
+            ("os" include nil nil [1327 1336])
+            ("numpy" include nil nil [1337 1354])
+            ("mn_column_width_pt" variable nil nil [1437 1463])
+            ("mn_text_width_pt" variable nil nil [1465 1489])
+            ("ratio" variable nil nil [1991 2003])
+            ("fig_width" variable nil nil [2004 2019])
+            ("fig_width_full" code nil nil [2031 2097])
+            ("fig_height" code nil nil [2098 2128])
+            ("fig_size" variable nil nil [2129 2164])
+            ("margin_h" variable nil nil [2220 2256])
+            ("margin_v" variable nil nil [2257 2313])
+            ("mycolors" variable nil nil [2315 2361])
+            ("mymarkers" variable nil nil [2478 2515])
+            ("params" variable nil nil [2572 2942])
+            ("matplotlib" code nil nil [2943 2977])
+            ("PLOT_DIR" variable nil nil [2979 2993])
+            ("LINESTYLES" code nil nil [2995 3033])
+            ("DASHES" variable nil nil [3035 3660])
+            ("DASH_SCALE" variable nil nil [3661 3677])
+            ("SAVING" variable nil nil [3679 3692])
+            ("sized_figure" function
+               (:documentation "
+    Create a new figure with its size calculated from which axes will have labels
+    and from the number of columns.
+    yscale: height of rows is scaled by this factor
+    left, right, bottom, top: reserve space on sides for label. 
+    If set to a boolean, space is determined automatically; if set to a number, 
+    that is used.
+    "
+                :arguments 
+                  ( ("rows" variable nil (reparse-symbol function_parameters) [3711 3715])
+                    ("columns" variable nil (reparse-symbol function_parameters) [3719 3726])
+                    ("left" variable nil (reparse-symbol function_parameters) [3747 3751])
+                    ("right" variable nil (reparse-symbol function_parameters) [3758 3763])
+                    ("top" variable nil (reparse-symbol function_parameters) [3771 3774])
+                    ("bottom" variable nil (reparse-symbol function_parameters) [3782 3788])
+                    ("sharex" variable nil (reparse-symbol function_parameters) [3812 3818])
+                    ("sharey" variable nil (reparse-symbol function_parameters) [3825 3831])
+                    ("yscale" variable nil (reparse-symbol function_parameters) [3855 3861]))                  )
+                nil [3694 5214])
+            ("set_margin" function (:arguments 
+              ( ("figsize" variable nil (reparse-symbol function_parameters) [5230 5237])
+                ("left" variable nil (reparse-symbol function_parameters) [5244 5248])
+                ("right" variable nil (reparse-symbol function_parameters) [5255 5260])
+                ("top" variable nil (reparse-symbol function_parameters) [5268 5271])
+                ("bottom" variable nil (reparse-symbol function_parameters) [5279 5285]))              ) nil [5215 6005])
+            ("add_subplots" function (:arguments 
+              ( ("rows" variable nil (reparse-symbol function_parameters) [6023 6027])
+                ("columns" variable nil (reparse-symbol function_parameters) [6029 6036]))              ) nil [6006 6344])
+            ("set_plotdir" function
+               (:documentation "
+    Set the default directory where plots are saved.
+    "
+                :arguments 
+                  ( ("path" variable nil (reparse-symbol function_parameters) [6361 6365]))                  )
+                nil [6345 6477])
+            ("set_save" function
+               (:documentation "
+    Specify whether plots should be saved.
+    This can turn off saving plots when testing.
+    "
+                :arguments 
+                  ( ("saving" variable nil (reparse-symbol function_parameters) [6491 6497]))                  )
+                nil [6478 6651])
+            ("save_plot" function
+               (:documentation "
+    Save a plot to given filename in PLOT_DIR.
+    "
+                :arguments 
+                  ( ("filename" variable nil (reparse-symbol function_parameters) [6666 6674])
+                    ("is_tight" variable nil (reparse-symbol function_parameters) [6676 6684])
+                    ("kwargs" variable nil (reparse-symbol function_parameters) [6692 6700]))                  )
+                nil [6652 6896])
+            ("get_dashes" function
+               (:documentation "
+    Get dash number from the dash array. DASH_SCALE is applied.
+    "
+                :arguments 
+                  ( ("number" variable nil (reparse-symbol function_parameters) [6912 6918]))                  )
+                nil [6897 7138])
+            ("ensure_list" function (:arguments 
+              ( ("arg" variable nil (reparse-symbol function_parameters) [7155 7158]))              ) nil [7139 7245])
+            ("dual_yticks" function
+               (:documentation "
+    Set all ax in axes to have yticks on both side.
+    "
+                :arguments 
+                  ( ("axes" variable nil (reparse-symbol function_parameters) [7262 7266]))                  )
+                nil [7246 7466])
+            ("clean_sharex" function
+               (:documentation "
+    For figure with multiple axes that share the x-axis, only
+    keep the tick labels for the lower one, and remove the vertical
+    space between the axes.
+    "
+                :arguments 
+                  ( ("axes" variable nil (reparse-symbol function_parameters) [7484 7488]))                  )
+                nil [7467 7887])
+            ("clean_sharey" function
+               (:documentation "
+    For figure with multiple axes that share the y-axis, only
+    keep the tick labels for the left one, and remove the horizontal
+    space between the axes.
+    "
+                :arguments 
+                  ( ("axes" variable nil (reparse-symbol function_parameters) [7905 7909]))                  )
+                nil [7888 8273])
+            ("tick_only" function
+               (:documentation " Copied from 
+    https://matplotlib.org/3.0.0/_modules/mpl_toolkits/axes_grid1/axes_grid.html#ImageGrid
+    "
+                :arguments 
+                  ( ("ax" variable nil (reparse-symbol function_parameters) [8288 8290])
+                    ("bottom" variable nil (reparse-symbol function_parameters) [8292 8298])
+                    ("left" variable nil (reparse-symbol function_parameters) [8306 8310]))                  )
+                nil [8274 8629])
+            ("shared_ylabel" function
+               (:documentation "
+    For a figure with multiple axes that share the x-axis *and*
+    have the same ylabel, place one ylabel at the center with
+    given text.
+    "
+                :arguments 
+                  ( ("axes" variable nil (reparse-symbol function_parameters) [8770 8774])
+                    ("text" variable nil (reparse-symbol function_parameters) [8776 8780]))                  )
+                nil [8752 9390])
+            ("shared_xlabel" function
+               (:documentation "
+    For a figure with multiple axes that share the y-axis *and*
+    have the same xlabel, place one xlabel at the center with
+    given text.
+    "
+                :arguments 
+                  ( ("axes" variable nil (reparse-symbol function_parameters) [9409 9413])
+                    ("text" variable nil (reparse-symbol function_parameters) [9420 9424]))                  )
+                nil [9391 10016])
+            ("color_axes" function
+               (:documentation "
+    Set the color of frame, ticks, label
+    "
+                :arguments 
+                  ( ("color" variable nil (reparse-symbol function_parameters) [10032 10037])
+                    ("ax" variable nil (reparse-symbol function_parameters) [10039 10041]))                  )
+                nil [10017 10483])
+            ("color_colorbar" function
+               (:documentation " Set the color of frame, ticks, label of a colorbar
+    "
+                :arguments 
+                  ( ("color" variable nil (reparse-symbol function_parameters) [10503 10508])
+                    ("cb" variable nil (reparse-symbol function_parameters) [10510 10512]))                  )
+                nil [10484 10697])
+            ("exp_tex" function
+               (:documentation "
+    Create teX expression for given number. Exception: 10^0 is not displayed.
+    force_zero: for display of 10^0
+    "
+                :arguments 
+                  ( ("x" variable nil (reparse-symbol function_parameters) [10824 10825])
+                    ("decimals" variable nil (reparse-symbol function_parameters) [10827 10835])
+                    ("force_zero" variable nil (reparse-symbol function_parameters) [10839 10849]))                  )
+                nil [10812 11275])
+            ("create_steps" function
+               (:documentation "
+    Given a function y(x), return the x and y coordinates that describe
+    a step function.
+    The length of the last step is guessed from the minimum delta x.
+    If a value is given to bound_to, two extra points are added at the
+    boundaries with that y value. This helps with filling lines.
+    "
+                :arguments 
+                  ( ("x" variable nil (reparse-symbol function_parameters) [11458 11459])
+                    ("y" variable nil (reparse-symbol function_parameters) [11461 11462])
+                    ("bound_to" variable nil (reparse-symbol function_parameters) [11464 11472]))                  )
+                nil [11441 12182])
+            ("save_reduced" function
+               (:documentation "
+    Save a reduced version of the current figure, by running reduce_plot
+    on all lines. The original lines are restored when this routine returns.
+    The figure is saved to the \"plot dir\", see set_plotdir()
+    Data outside the plot x-range is trimmed in a crude way. Use trim=False to
+    switch this off if you experience problems.
+
+    TODO: paths currently not simplified!
+    "
+                :arguments 
+                  ( ("filename" variable nil (reparse-symbol function_parameters) [12200 12208])
+                    ("dpi" variable nil (reparse-symbol function_parameters) [12210 12213])
+                    ("trim" variable nil (reparse-symbol function_parameters) [12219 12223]))                  )
+                nil [12183 16317])
+            ("gcv" function
+               (:documentation "
+    Get the mean value of the current (or indicated by number) axis within xlim and ylim.
+    "
+                :arguments 
+                  ( ("ax_number" variable nil (reparse-symbol function_parameters) [16326 16335]))                  )
+                nil [16318 16935])
+            ("gcvs" function
+               (:documentation "
+    Get the values of the current (or indicated by number) axis within xlim and ylim.
+    "
+                :arguments 
+                  ( ("ax_number" variable nil (reparse-symbol function_parameters) [16945 16954]))                  )
+                nil [16936 17536])
+            ("gcm" function
+               (:documentation "
+    Return a mask array of the data in the current or given axis.
+    "
+                :arguments 
+                  ( ("ax_number" variable nil (reparse-symbol function_parameters) [17545 17554]))                  )
+                nil [17537 18103])
+            ("get_upper_lower" function
+               (:documentation "
+    For given light curve, return two curves that represent the high and low profiles.
+    Assume input is time ordered
+    "
+                :arguments 
+                  ( ("time" variable nil (reparse-symbol function_parameters) [18124 18128])
+                    ("lum" variable nil (reparse-symbol function_parameters) [18130 18133])
+                    ("dt" variable nil (reparse-symbol function_parameters) [18135 18137]))                  )
+                nil [18104 18791])
+            ("align_ylabels" function
+               (:documentation "
+    Align the ylabels of given axes to given coordinates in units where
+    0.0 to 1.0 describes the data area. If no axes are given, all axes
+    of the current figure are used.
+    A call to draw() may be required to update an onscreen plot.
+    "
+                :arguments 
+                  ( ("axes" variable nil (reparse-symbol function_parameters) [18810 18814])
+                    ("x" variable nil (reparse-symbol function_parameters) [18821 18822])
+                    ("y" variable nil (reparse-symbol function_parameters) [18830 18831]))                  )
+                nil [18792 19327])
+            ("split_axes" function
+               (:documentation "
+    Split axes in two (horizontally) at the given fractional part <divide>.
+    draw() must be called before the result shows up.
+
+    TODO: does not work. Copying artists between axes seems very difficult. Better
+    to plot multiple times.
+    "
+                :arguments 
+                  ( ("ax" variable nil (reparse-symbol function_parameters) [19347 19349])
+                    ("divide" variable nil (reparse-symbol function_parameters) [19356 19362]))                  )
+                nil [19332 20059]))          
+      :file "plotutils.py"
+      :pointmax 20059
+      :fsize 20058
+      :lastmodtime '(23616 7342 480018 846000)
+      :unmatched-syntax '((NAME 5762 . 5767) (IF 5819 . 5821) (ELSE 5846 . 5850) (NAME 5667 . 5671) (IF 5722 . 5724) (ELSE 5748 . 5752) (NAME 5565 . 5571) (IF 5623 . 5625) (ELSE 5651 . 5655) (NAME 5475 . 5478) (IF 5527 . 5529) (ELSE 5552 . 5556) (NAME 4760 . 4765) (IF 4792 . 4794) (ELSE 4819 . 4823) (NAME 4690 . 4694) (IF 4720 . 4722) (ELSE 4746 . 4750) (NAME 4615 . 4621) (IF 4646 . 4648) (ELSE 4674 . 4678) (NAME 4552 . 4555) (IF 4577 . 4579) (ELSE 4602 . 4606)))
+    (semanticdb-table "semanticdb-table"
+      :file "reduce_plot.py"
+      :fsize 4075
+      :lastmodtime '(23259 61393 10643 381000)))
+  :file "!Users!chongchonghe!myPythonPath!semantic.cache"
+  :semantic-tag-version "2.0"
+  :semanticdb-version "2.2")

@@ -1,0 +1,2172 @@
+;; Object semanticdb-project-database-file
+;; SEMANTICDB Tags save file
+(semanticdb-project-database-file "semanticdb-project-database-file"
+  :tables
+  (list
+    (semanticdb-table "semanticdb-table"
+      :major-mode python-mode
+      :tags 
+        '( ("\"\"\"
+
+Filename: efMpi.py
+Description: Use pymses to retrieve outputs *in the current folder* and 
+calculate escape fraction and save results to efMpi.out
+
+This script saves into files the following quantities:
+- HI: int(rho * (1 - xHII) dx),
+- HeI: int(rho * (1 - xHeII - xHeIII) dx),
+- HeII: int(rho * xHeII dx)
+
+How to run?
+>>>
+
+If isTest:
+1. dr = 0.4
+2. pick on the first two outputs with sink particles
+
+Version history:
+- v2:
+  - add QVacca, but returns 1
+  - add hydroFrac = 1
+- v3:
+  - hydroFrac = 0.76
+- v4:
+  - Set the correct QVacca
+- v5:
+  - Reset the style of arguments
+
+ef data history
+The outputs for each version of the code is in Job1.2
+- v0: Non-MPI, use multiprocessing. Numbers are escape fraction
+- v1: First version of MPI code. Numbers are escape fraction
+- v2:
+  - The outputs are changed to optical depth, assuming the cross
+  section for all frequencise is \\sigma_0.
+  - hydroFrac = 1 as in previous versions
+- v3:?
+- Current:
+  - hydroFrac = 1. Change hydroFrac in the plotting code.
+  - Current version of the code efMpi.py
+
+@author: chongchonghe
+\"\"\"" code nil nil [47 1123])
+            ("__future__" include nil nil [1125 1172])
+            ("os" include nil nil [1173 1182])
+            ("sys" include nil nil [1183 1193])
+            ("numpy" include nil nil [1271 1289])
+            ("sys" variable nil nil [1290 1324])
+            ("pymses" include nil nil [1325 1356])
+            ("pymses.analysis" include nil nil [1357 1398])
+            ("pymses.utils" include nil nil [1399 1438])
+            ("sys" variable nil nil [1439 1466])
+            ("healpy" include nil nil [1501 1520])
+            ("healpy.pixelfunc" include nil nil [1521 1550])
+            ("mpi4py" include nil nil [1551 1573])
+            ("try" code nil nil [1610 1695])
+            ("gc" include nil nil [1695 1704])
+            ("utilities" include nil nil [1705 1728])
+            ("\"\"\"  parameter space  \"\"\"" code nil nil [1731 1756])
+            ("my_error" function (:documentation " Search for the following keywords in the .o file to ensure
+    everything is in control.
+    ") nil [1833 1975])
+            ("rank2id" function
+               (:documentation " Convert rank to [outputID, starID_i, starID_e].
+    outputID indices from 1, starID indices from 0, rank indices from 0.
+
+    Parameters
+    ----------
+    rank : integer
+        the rank of MPI
+    size : integer
+        the size of MPI
+    numOfStars : array_like
+        rhe numbers of stars in each outputs
+
+    Returns
+    -------
+    [outputID, starID_i, starID_e, starIndex]: list
+
+    Raises
+    ------
+    MyError
+        If size < the number of outputs with non-zero sink particles.
+
+    "
+                :arguments 
+                  ( ("rank" variable nil (reparse-symbol function_parameters) [1988 1992])
+                    ("size" variable nil (reparse-symbol function_parameters) [1994 1998])
+                    ("numOfStars" variable nil (reparse-symbol function_parameters) [2000 2010]))                  )
+                nil [1976 3367])
+            ("assign_jobs" function
+               (:documentation "  Read the number of stars for each outputs  "
+                :arguments 
+                  ( ("nstart" variable nil (reparse-symbol function_parameters) [3384 3390])
+                    ("nend" variable nil (reparse-symbol function_parameters) [3392 3396])
+                    ("size" variable nil (reparse-symbol function_parameters) [3398 3402])
+                    ("nsidePow" variable nil (reparse-symbol function_parameters) [3404 3412])
+                    ("isAllGas" variable nil (reparse-symbol function_parameters) [3414 3422]))                  )
+                nil [3368 5138])
+            ("colDen_single_star" function
+               (:documentation "
+    Calculate the col den in all directions from a single star
+    
+    Parameters
+    ----------
+    nsidePow : int
+        Total pixels will be (2**nsidePow)**2.
+    outputID : int
+        output_#####.
+    starID : int
+        The star ID.
+    nMC: int
+        Number of Monte Carlo sampling points. 
+        If nMC==0, use grid method with the default courant_factor.
+    isAllGas : boolean
+        False: N is calculated as the neutral hydrogen density
+        True: N is calculated as the column density of all atoms
+    #courant_factor : double
+    #    The courant factor of grid integration.
+    isTest : boolean
+        Run a test.
+
+    Returns
+    -------
+    if not isAllGas:
+        return colHI, colHeI, colHeII
+    # tau: numpy array, Npixel * 1
+    #     The optical depth in all directions of the sky.
+
+    Notes
+    -----
+    If outputID or starID is None: return all 0
+    If output_outputID does not exit, return all 0
+    If starID exceeds the number of stars, return all 0
+
+    "
+                :arguments 
+                  ( ("nsidePow" variable nil (reparse-symbol function_parameters) [5162 5170])
+                    ("outputID" variable nil (reparse-symbol function_parameters) [5172 5180])
+                    ("starID" variable nil (reparse-symbol function_parameters) [5182 5188])
+                    ("nMC" variable nil (reparse-symbol function_parameters) [5190 5193])
+                    ("isAllGas" variable nil (reparse-symbol function_parameters) [5218 5226])
+                    ("isTest" variable nil (reparse-symbol function_parameters) [5234 5240]))                  )
+                nil [5139 12521])
+            ("run" function
+               (:documentation " Do the job of one core. Output: Save one data file 
+    
+    Parameters
+    ----------
+    nstart: int
+        The start ID of the stars to compute
+    nend: None or int 
+        The end ID of the stars to compute
+    nsidePow: int
+        Totally (2**nsidePow)**2 pixels
+    nMC: int
+        Number of Monte Carlo sampling points. 
+        If nMC==0, use grid method with the default courant_factor.
+
+    Returns
+    -------
+    None.
+    "
+                :arguments 
+                  ( ("nstart" variable nil (reparse-symbol function_parameters) [12530 12536])
+                    ("nend" variable nil (reparse-symbol function_parameters) [12538 12542])
+                    ("nsidePow" variable nil (reparse-symbol function_parameters) [12549 12557])
+                    ("nMC" variable nil (reparse-symbol function_parameters) [12561 12564])
+                    ("isAllGas" variable nil (reparse-symbol function_parameters) [12571 12579]))                  )
+                nil [12522 18996])
+            ("if" code nil nil [19006 20044]))          
+      :file "ef_mpi.py"
+      :pointmax 20176
+      :fsize 20211
+      :lastmodtime '(23536 33091 502727 115000)
+      :unmatched-syntax '((NAME 3100 . 3109) (IF 3148 . 3150) (ELSE 3163 . 3167)))
+    (semanticdb-table "semanticdb-table"
+      :major-mode python-mode
+      :tags 
+        '( ("\"\"\" Update ef_new_collected from dp2 for all jobs
+\"\"\"" code nil nil [23 76])
+            ("center" include nil nil [77 106])
+            ("os" include nil nil [107 116])
+            ("for" code nil nil [210 465]))          
+      :file "update_ef.py"
+      :pointmax 465
+      :fsize 76
+      :lastmodtime '(23534 904 720096 67000)
+      :unmatched-syntax nil)
+    (semanticdb-table "semanticdb-table"
+      :major-mode python-mode
+      :tags 
+        '( ("\"\"\"
+    center.py
+    Author: chongchonghe
+    Date: 14:24, 1/5/18
+    Description: Define all the gloable variables for the whole project.
+\"\"\"" code nil nil [46 189])
+            ("__future__" include nil nil [191 238])
+            ("os" include nil nil [239 248])
+            ("matplotlib" include nil nil [249 266])
+            ("astropy.units" include nil nil [301 326])
+            ("astropy.constants" include nil nil [327 360])
+            ("units" include nil nil [361 373])
+            ("global_version" variable nil nil [594 616])
+            ("global" code nil nil [618 628])
+            ("DIR" variable nil nil [629 660])
+            ("JOBIDS" variable nil nil [662 881])
+            ("JOBIDS_MORE" variable nil nil [882 912])
+            ("JOBIDS_ALL" variable nil nil [913 928])
+            ("for" code nil nil [929 1008])
+            ("JOB_MET" variable nil nil [1008 1046])
+            ("JOB_MET_Z" variable nil nil [1047 1074])
+            ("JOBNAMES" variable nil nil [1076 1565])
+            ("JOB_INFO" variable nil nil [1567 2530])
+            ("JOB_COMPACTNESS" variable nil nil [2602 2674])
+            ("JOB_PRES" variable nil nil [2675 2701])
+            ("endIDs" variable nil nil [2703 2890])
+            ("jobNamePart1" variable nil nil [2892 2950])
+            ("jobNamePart2" variable nil nil [2951 3000])
+            ("TFFS" variable nil nil [3066 3109])
+            ("PLOT_RANGE_IN_TFF" variable nil nil [3152 3180])
+            ("T_TICKS" variable nil nil [3207 3238])
+            ("GAS_DENSITIES" variable nil nil [3307 3362])
+            ("HYDRO_FRAC" variable nil nil [3450 3467])
+            ("sigma0" variable nil nil [3468 3486])
+            ("mH" variable nil nil [3524 3539])
+            ("mHe" variable nil nil [3545 3561])
+            ("nH2nHe" code nil nil [3562 3615])
+            ("eHI" variable nil nil [3616 3626])
+            ("eHeI" variable nil nil [3627 3638])
+            ("eHeII" variable nil nil [3639 3651])
+            ("atoms" variable nil nil [3652 3681])
+            ("unit_lum" variable nil nil [3682 3697])
+            ("FIGX, FIGY" code nil nil [3956 3977])
+            ("FIGX_MN" variable nil nil [3997 4010])
+            ("FIGY_MN" code nil nil [4011 4034])
+            ("FIG_FORMAT" variable nil nil [4072 4090])
+            ("CMAP" variable nil nil [4122 4161])
+            ("MYCOLORS" variable nil nil [4616 4662])
+            ("MYMARKER" variable nil nil [4833 4869])
+            ("PARAMS" variable nil nil [5115 5518])
+            ("''" code nil nil [5593 5595])
+            ("if" code nil nil [5596 5772])
+            ("PARAMS" code nil nil [5847 5921]))          
+      :file "center.py"
+      :pointmax 5922
+      :fsize 5921
+      :lastmodtime '(23571 7028 469623 888000)
+      :unmatched-syntax '((NAME 5520 . 5526) (IF 5561 . 5563) (ELSE 5588 . 5592)))
+    (semanticdb-table "semanticdb-table"
+      :major-mode python-mode
+      :tags 
+        '( ("\"\"\"
+
+Example
+-------
+>>> Simple_plot('3.3.2').main()
+
+@author: chongchonghe
+\"\"\"" code nil nil [47 126])
+            ("__future__" include nil nil [128 175])
+            ("numpy" include nil nil [176 194])
+            ("SimplePlotsServer" include nil nil [195 236])
+            ("ramses" include nil nil [237 262])
+            ("os" include nil nil [263 272])
+            ("Simple_plot" type
+               (:superclasses ("SimplePlots" "RAMSES")
+                :members 
+                  ( ("slice_name" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [334 338])
+                            ("outputid" variable nil (reparse-symbol function_parameters) [340 348]))                          )
+                        (reparse-symbol indented_block_body) [319 436])
+                    ("prj_name" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [454 458])
+                            ("outputid" variable nil (reparse-symbol function_parameters) [460 468])
+                            ("field" variable nil (reparse-symbol function_parameters) [470 475]))                          )
+                        (reparse-symbol indented_block_body) [441 572])
+                    ("check_h5" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [590 594]))                          
+                        :documentation " If all h5 exit, return (0, 0)
+        else, return (ini_id, last_output)
+        ")
+                        (reparse-symbol indented_block_body) [577 1036])
+                    ("write_bash" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [1056 1060]))                          
+                        :documentation " Write the bash scrip and submit the job
+        ")
+                        (reparse-symbol indented_block_body) [1041 2144])
+                    ("main" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [2158 2162]))                          )
+                        (reparse-symbol indented_block_body) [2149 2322]))                  
+                :type "class")
+                nil [274 2322]))          
+      :file "simple_plot.py"
+      :pointmax 2322
+      :fsize 2321
+      :lastmodtime '(23531 42653 785387 486000)
+      :unmatched-syntax nil)
+    (semanticdb-table "semanticdb-table"
+      :major-mode python-mode
+      :tags 
+        '( ("\"\"\"imf.py
+Run the final steps of various functions, e.g. plot the imf grids, SFE curve.
+
+Attributes
+----------
+See the contents
+
+Example
+-------
+
+
+Notes
+-----
+
+
+\"\"\"" code nil nil [47 211])
+            ("__future__" include nil nil [412 459])
+            ("os" include nil nil [460 474])
+            ("sys" include nil nil [460 474])
+            ("numpy" include nil nil [475 493])
+            ("matplotlib.pyplot" include nil nil [494 525])
+            ("center2" include nil nil [526 540])
+            ("center" include nil nil [541 554])
+            ("utilities" include nil nil [555 571])
+            ("plotutils" include nil nil [572 588])
+            ("global" code nil nil [622 633])
+            ("TEST" variable nil nil [634 646])
+            ("run_totr" function (:documentation " Plot Q_cl / M_cl 
+    ") nil [648 745])
+            ("run_inter" function (:documentation " Test interp of sfe
+    ") nil [751 876])
+            ("run_comb_simple" function nil nil [1442 1585])
+            ("run_simple" function (:documentation " Write simple_Job.bash and submit jobs
+    ") nil [1587 1839])
+            ("run_stage_Qesc" function nil nil [1853 1999])
+            ("run_sky" function (:documentation " Plot skymap from 3 snapshots of 3 simulations
+    ") nil [2000 4893])
+            ("run_Q_mass" function nil nil [4900 6491])
+            ("run_ef_prj" function nil nil [6494 9709])
+            ("run_ef_prj2" function nil nil [9711 11662])
+            ("run_update_ef" function (:arguments 
+              ( ("jobs" variable nil (reparse-symbol function_parameters) [11710 11714]))              ) nil [11692 12171])
+            ("run_run" function nil nil [12172 12212])
+            ("if" code nil nil [12214 12356]))          
+      :file "main.py"
+      :pointmax 12356
+      :fsize 12355
+      :lastmodtime '(23613 8143 152890 227000)
+      :unmatched-syntax '((NAME 7095 . 7101) (IF 7108 . 7110) (ELSE 7121 . 7125) (NAME 7043 . 7052) (IF 7060 . 7062) (ELSE 7073 . 7077) (NAME 6989 . 6993) (IF 7013 . 7015) (ELSE 7026 . 7030) (NAME 6885 . 6895) (IF 6902 . 6904) (ELSE 6915 . 6919)))
+    (semanticdb-table "semanticdb-table"
+      :major-mode python-mode
+      :tags 
+        '( ("\"\"\"
+
+@author: chongchonghe
+\"\"\"" code nil nil [47 77])
+            ("os" include nil nil [79 93])
+            ("sys" include nil nil [79 93])
+            ("center" include nil nil [94 114])
+            ("yt" include nil nil [115 124])
+            ("numpy" include nil nil [125 143])
+            ("f90nml" include nil nil [144 157])
+            ("NoSinkParticle" type
+               (:superclasses ("Exception")
+                :members 
+                  ( ("pass" code nil (reparse-symbol indented_block_body) [197 201]))                  
+                :type "class")
+                nil [160 202])
+            ("RAMSES" type
+               (:documentation " The very basic class do the RAMSES project
+    "
+                :superclasses ("object")
+                :members 
+                  ( ("is_load_tools" variable nil (reparse-symbol indented_block_body) [289 309])
+                    ("__init__" function
+                       (:suite 
+                          ( ("if" code nil (reparse-symbol indented_block_body) [421 776]))                          
+                        :parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [328 332])
+                            ("jobid" variable nil (reparse-symbol function_parameters) [334 339])
+                            ("jobdir" variable nil (reparse-symbol function_parameters) [346 352])
+                            ("load_tools" variable nil (reparse-symbol function_parameters) [359 369]))                          
+                        :constructor-flag t)
+                        (reparse-symbol indented_block_body) [315 776])
+                    ("set_jobid_simple" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [802 806])
+                            ("jobid" variable nil (reparse-symbol function_parameters) [808 813])
+                            ("jobdir" variable nil (reparse-symbol function_parameters) [815 821]))                          
+                        :documentation " jobdir is used when __init__ is overwritten
+        ")
+                        (reparse-symbol indented_block_body) [781 1706])
+                    ("load_tools" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [1726 1730]))                          
+                        :documentation " adsfd
+        ")
+                        (reparse-symbol indented_block_body) [1711 2107])
+                    ("set_jobid" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [2126 2130])
+                            ("jobid" variable nil (reparse-symbol function_parameters) [2132 2137])
+                            ("jobdir" variable nil (reparse-symbol function_parameters) [2139 2145]))                          
+                        :documentation " jobdir is used when __init__ is overwritten
+        ")
+                        (reparse-symbol indented_block_body) [2112 2292])
+                    ("get_info_path" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [2315 2319])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [2321 2329]))                          )
+                        (reparse-symbol indented_block_body) [2297 2457])
+                    ("get_trelax" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [2477 2481]))                          )
+                        (reparse-symbol indented_block_body) [2462 2735])
+                    ("get_outid_bigger_than" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [2766 2770])
+                            ("x" variable nil (reparse-symbol function_parameters) [2772 2773]))                          )
+                        (reparse-symbol indented_block_body) [2740 2817])
+                    ("get_sink_path" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [2840 2844])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [2846 2854]))                          )
+                        (reparse-symbol indented_block_body) [2822 2982])
+                    ("get_sink_particles" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [3010 3014])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [3016 3024]))                          
+                        :documentation " 
+        Return
+        ------
+        - No such file or output: raise FileNotFoundError
+        - No sink particle in this output: raise NoSinkParticle
+        - Otherwise: An array with ndim=2
+        ")
+                        (reparse-symbol indented_block_body) [2987 3663])
+                    ("get_units" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [3682 3686]))                          )
+                        (reparse-symbol indented_block_body) [3668 4438])
+                    ("get_last_output" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [4471 4475]))                          )
+                        (reparse-symbol indented_block_body) [4451 4694])
+                    ("get_time" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [4712 4716])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [4718 4726]))                          
+                        :documentation " Read the time in Myr (not substracting t_relax) of data_id.
+        If self.get_times is used ever before, will just retract from
+        self.times
+        ")
+                        (reparse-symbol indented_block_body) [4699 5299])
+                    ("get_times" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [5318 5322]))                          
+                        :documentation "Get the times (in Myr, not substracting t_relax) of all snapshots
+        of a job as a list")
+                        (reparse-symbol indented_block_body) [5304 5729])
+                    ("time_str" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [5747 5751])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [5753 5761])
+                            ("is_disp_tff" variable nil (reparse-symbol function_parameters) [5763 5774]))                          
+                        :documentation " return 't = * Myr' or 't = * Myr (* t_ff)'
+        ")
+                        (reparse-symbol indented_block_body) [5734 6075])
+                    ("norm_time" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [6098 6102])
+                            ("time" variable nil (reparse-symbol function_parameters) [6104 6108]))                          
+                        :documentation " Convert time to (time after t_relax) / tff
+        ")
+                        (reparse-symbol indented_block_body) [6084 6246])
+                    ("get_t_over_tff" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [6270 6274]))                          
+                        :documentation " Return (t - t_relax) / tff
+        ")
+                        (reparse-symbol indented_block_body) [6251 6387])
+                    ("get_gas_radius" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [6411 6415]))                          )
+                        (reparse-symbol indented_block_body) [6392 6624])
+                    ("get_age" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [6641 6645])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [6647 6655]))                          
+                        :documentation " return the age in Myr of all stars as an array. ")
+                        (reparse-symbol indented_block_body) [6629 7115])
+                    ("is_sink_alive" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [7138 7142])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [7144 7152]))                          )
+                        (reparse-symbol indented_block_body) [7120 7434])
+                    ("get_gas_mass" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [7456 7460]))                          )
+                        (reparse-symbol indented_block_body) [7439 7566])
+                    ("get_gas_peak_density" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [7596 7600]))                          )
+                        (reparse-symbol indented_block_body) [7571 7647])
+                    ("get_sink_mass" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [7674 7678])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [7680 7688]))                          
+                        :documentation " Replaced by self.get_sink_masses
+        Get sink masses in M_sun of an output (not shifted)
+        :param outputID:
+        :param jobPath:
+        :return: pos [array],
+            bad [bool]:
+                0: not bad: sink existing
+                1: bad: no sink particle
+                2: bad: file not existing
+        ")
+                        (reparse-symbol indented_block_body) [7656 8663])
+                    ("get_sink_masses" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [8688 8692])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [8694 8702]))                          
+                        :documentation " Get sink masses in M_sun of one output (not shifted)
+        Replacing get_sink_mass
+
+        Return 
+        ------
+            sink mass: 1-D Array
+        
+        ")
+                        (reparse-symbol indented_block_body) [8668 9127])
+                    ("get_tot_sink_mass" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [9154 9158])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [9160 9168]))                          
+                        :documentation " Get the total sink mass in one output
+
+        Exceptions:
+        - FileNotFoundError: No such file
+
+        ")
+                        (reparse-symbol indented_block_body) [9132 9500])
+                    ("get_single_tot_sink_mass" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [9534 9538])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [9540 9548]))                          )
+                        (reparse-symbol indented_block_body) [9505 9604])
+                    ("get_tot_sink_mass_list" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [9636 9640]))                          
+                        :documentation " Get the total sink mass for all outputs as an array
+        ")
+                        (reparse-symbol indented_block_body) [9609 10196])
+                    ("get_sf_end_time" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [10221 10225]))                          
+                        :documentation " Get the time when SF ends ")
+                        (reparse-symbol indented_block_body) [10201 10490])
+                    ("get_sfr" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [10507 10511]))                          
+                        :documentation " Get the SFR in M_sol / yr ")
+                        (reparse-symbol indented_block_body) [10495 10689])
+                    ("get_eff_radius" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [10713 10717])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [10719 10727])
+                            ("thresh" variable nil (reparse-symbol function_parameters) [10734 10740]))                          
+                        :documentation "
+        Return
+        ------
+        Exceptions: 
+        - NoSinkParticle: no more than 1 sink particle
+        - FileNotFoundError
+        otherwise: 
+        effective radius in code units (~pc)
+        ")
+                        (reparse-symbol indented_block_body) [10694 12314])
+                    ("get_ffsct" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [12333 12337]))                          )
+                        (reparse-symbol indented_block_body) [12319 12443])
+                    ("movie_png_fn" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [12465 12469])
+                            ("i" variable nil (reparse-symbol function_parameters) [12471 12472]))                          )
+                        (reparse-symbol indented_block_body) [12448 12546])
+                    ("get_rep_ids" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [12567 12571])
+                            ("num" variable nil (reparse-symbol function_parameters) [12573 12576])
+                            ("is_ef" variable nil (reparse-symbol function_parameters) [12580 12585])
+                            ("must_have_star" variable nil (reparse-symbol function_parameters) [12593 12607]))                          
+                        :documentation " Returns representative outputIDs from a simulation.
+        ")
+                        (reparse-symbol indented_block_body) [12551 13350]))                  
+                :type "class")
+                nil [203 13350])
+            ("Ramses" type
+               (:superclasses ("RAMSES")
+                :members 
+                  ( ("__init__" function
+                       (:suite 
+                          ( ("self" variable nil (reparse-symbol indented_block_body) [13565 13585])
+                            ("if" code nil (reparse-symbol indented_block_body) [13594 13948])
+                            ("self" code nil (reparse-symbol indented_block_body) [13956 13987])
+                            ("self" variable nil (reparse-symbol indented_block_body) [13996 14048])
+                            ("self" variable nil (reparse-symbol indented_block_body) [14057 14098])
+                            ("self" variable nil (reparse-symbol indented_block_body) [14161 14212])
+                            ("self" code nil (reparse-symbol indented_block_body) [14362 14413])
+                            ("self" variable nil (reparse-symbol indented_block_body) [14422 14474])
+                            ("self" variable nil (reparse-symbol indented_block_body) [14483 14532])
+                            ("self" variable nil (reparse-symbol indented_block_body) [14541 14590])
+                            ("self" variable nil (reparse-symbol indented_block_body) [14599 14667])
+                            ("self" code nil (reparse-symbol indented_block_body) [14789 14900])
+                            ("self" code nil (reparse-symbol indented_block_body) [14909 14981])
+                            ("self" code nil (reparse-symbol indented_block_body) [14990 15055])
+                            ("self" variable nil (reparse-symbol indented_block_body) [15073 15104])
+                            ("self" variable nil (reparse-symbol indented_block_body) [15113 15143])
+                            ("self" variable nil (reparse-symbol indented_block_body) [15219 15254])
+                            ("self" variable nil (reparse-symbol indented_block_body) [15263 15305])
+                            ("self" variable nil (reparse-symbol indented_block_body) [15314 15331]))                          
+                        :parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [13530 13534])
+                            ("jobid" variable nil (reparse-symbol function_parameters) [13536 13541])
+                            ("jobdir" variable nil (reparse-symbol function_parameters) [13543 13549]))                          
+                        :constructor-flag t)
+                        (reparse-symbol indented_block_body) [13517 15332])
+                    ("set_jobid_simple" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [15358 15362]))                          )
+                        (reparse-symbol indented_block_body) [15337 15378])
+                    ("load_tools" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [15398 15402]))                          )
+                        (reparse-symbol indented_block_body) [15383 15418])
+                    ("set_jobid" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [15437 15441]))                          )
+                        (reparse-symbol indented_block_body) [15423 15457])
+                    ("get_units" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [15476 15480]))                          )
+                        (reparse-symbol indented_block_body) [15462 15496]))                  
+                :type "class")
+                nil [13490 15496]))          
+      :file "ramses.py"
+      :pointmax 16014
+      :fsize 16013
+      :lastmodtime '(23616 580 224531 731000)
+      :unmatched-syntax nil)
+
+    (semanticdb-table "semanticdb-table"
+      :major-mode python-mode
+      :tags 
+        '( ("\"\"\"
+
+@author: chongchonghe
+\"\"\"" code nil nil [47 77])
+            ("sink" include nil nil [79 97])
+            ("plotutils" include nil nil [98 114])
+            ("plotutils" code nil nil [115 151])
+            ("main" function nil nil [153 977])
+            ("main" code nil nil [978 984]))          
+      :file "ef_plot.py"
+      :pointmax 985
+      :fsize 984
+      :lastmodtime '(23525 57875 808039 401000)
+      :unmatched-syntax nil)
+    (semanticdb-table "semanticdb-table"
+      :file "ef_collect.py"
+      :fsize 2536
+      :lastmodtime '(23536 33046 290158 789000))
+    (semanticdb-table "semanticdb-table"
+      :file "SimplePlotsServer.py"
+      :fsize 4203
+      :lastmodtime '(23536 32841 863958 615000))
+    (semanticdb-table "semanticdb-table"
+      :major-mode python-mode
+      :tags 
+        '( ("numpy" include nil nil [27 45])
+            ("ramses" include nil nil [46 59])
+            ("center2" include nil nil [60 74])
+            ("QVacca" function
+               (:documentation " Return Vacca QHI * 1e-44. Mass range: 1 - 10000. "
+                :arguments 
+                  ( ("Mass" variable nil (reparse-symbol function_parameters) [201 205]))                  )
+                nil [190 652])
+            ("QVaccaRaw" function (:arguments 
+              ( ("m" variable nil (reparse-symbol function_parameters) [667 668]))              ) nil [653 741])
+            ("poly" function (:arguments 
+              ( ("logm" variable nil (reparse-symbol function_parameters) [751 755])
+                ("a" variable nil (reparse-symbol function_parameters) [757 758]))              ) nil [742 849])
+            ("QHeI" function (:arguments 
+              ( ("mass" variable nil (reparse-symbol function_parameters) [859 863]))              ) nil [850 1441])
+            ("QHeII" function (:arguments 
+              ( ("mass" variable nil (reparse-symbol function_parameters) [1452 1456]))              ) nil [1442 1815])
+            ("sigmaHI" function
+               (:documentation " [nu] = eV "
+                :arguments 
+                  ( ("nu" variable nil (reparse-symbol function_parameters) [1828 1830]))                  )
+                nil [1816 1964])
+            ("sigmaHeI" function
+               (:documentation " [nu] = eV "
+                :arguments 
+                  ( ("nu" variable nil (reparse-symbol function_parameters) [1978 1980]))                  )
+                nil [1965 2216])
+            ("sigmaHeII" function
+               (:documentation " [nu] = eV "
+                :arguments 
+                  ( ("nu" variable nil (reparse-symbol function_parameters) [2231 2233]))                  )
+                nil [2217 2375])
+            ("InterpolateTau" type
+               (:documentation "
+    Perform realistic tau-to-get_ef conversion
+    :param tau: array, ndim=1. log10 of tau
+    :return: get_ef: array, ndim=1. log10 of get_ef
+    "
+                :members 
+                  ( ("astropy.constants" include nil (reparse-symbol indented_block_body) [2913 2942])
+                    ("e" variable nil (reparse-symbol indented_block_body) [2947 2960])
+                    ("h" variable nil (reparse-symbol indented_block_body) [2965 2978])
+                    ("k" variable nil (reparse-symbol indented_block_body) [2983 2998])
+                    ("c" variable nil (reparse-symbol indented_block_body) [3003 3016])
+                    ("vH" code nil (reparse-symbol indented_block_body) [3021 3038])
+                    ("planck" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [3131 3135])
+                            ("nu" variable nil (reparse-symbol function_parameters) [3137 3139])
+                            ("T" variable nil (reparse-symbol function_parameters) [3141 3142]))                          
+                        :documentation " Return the planck function ")
+                        (reparse-symbol indented_block_body) [3120 3313])
+                    ("deno" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [3327 3331])
+                            ("x" variable nil (reparse-symbol function_parameters) [3333 3334])
+                            ("T" variable nil (reparse-symbol function_parameters) [3336 3337]))                          
+                        :documentation " x = nu/nuH ")
+                        (reparse-symbol indented_block_body) [3318 3435])
+                    ("nume" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [3449 3453])
+                            ("x" variable nil (reparse-symbol function_parameters) [3455 3456])
+                            ("tau" variable nil (reparse-symbol function_parameters) [3458 3461])
+                            ("T" variable nil (reparse-symbol function_parameters) [3463 3464])
+                            ("field" variable nil (reparse-symbol function_parameters) [3466 3471]))                          
+                        :documentation " x = nu/nuH ")
+                        (reparse-symbol indented_block_body) [3440 3980])
+                    ("logef" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [3995 3999])
+                            ("tau" variable nil (reparse-symbol function_parameters) [4001 4004])
+                            ("T" variable nil (reparse-symbol function_parameters) [4006 4007])
+                            ("field" variable nil (reparse-symbol function_parameters) [4009 4014]))                          
+                        :documentation " the calculated escape fraction
+        Return:
+        -------
+        log(ef)
+        ")
+                        (reparse-symbol indented_block_body) [3985 4558])
+                    ("interpolate" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [4640 4644])
+                            ("logtauLim" variable nil (reparse-symbol function_parameters) [4646 4655])
+                            ("Tlim" variable nil (reparse-symbol function_parameters) [4667 4671])
+                            ("isNewStyle" variable nil (reparse-symbol function_parameters) [4707 4717])
+                            ("field" variable nil (reparse-symbol function_parameters) [4724 4729]))                          )
+                        (reparse-symbol indented_block_body) [4624 5700])
+                    ("do_interpolation" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [5726 5730]))                          )
+                        (reparse-symbol indented_block_body) [5705 6295])
+                    ("ef_inte" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [6312 6316])
+                            ("tau" variable nil (reparse-symbol function_parameters) [6318 6321])
+                            ("T" variable nil (reparse-symbol function_parameters) [6323 6324])
+                            ("field" variable nil (reparse-symbol function_parameters) [6326 6331]))                          )
+                        (reparse-symbol indented_block_body) [6300 6958])
+                    ("tau_to_ef" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [7407 7411])
+                            ("tau" variable nil (reparse-symbol function_parameters) [7413 7416])
+                            ("temps" variable nil (reparse-symbol function_parameters) [7418 7423])
+                            ("field" variable nil (reparse-symbol function_parameters) [7425 7430]))                          
+                        :documentation "
+        Convert tau to log(ef). np.ndim(tau) must be 2
+        :param tau:  tau
+        :param T:       T in Kelvin
+        :return: log10 of ef
+        ")
+                        (reparse-symbol indented_block_body) [7393 9300]))                  
+                :type "class")
+                nil [2657 9300])
+            ("Radiation" type
+               (:superclasses ("ramses.Ramses")
+                :members 
+                  ( ("colDen_to_tau" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [10110 10114])
+                            ("field" variable nil (reparse-symbol function_parameters) [10116 10121])
+                            ("colDenHI" variable nil (reparse-symbol function_parameters) [10123 10131])
+                            ("colDenHeI" variable nil (reparse-symbol function_parameters) [10133 10142])
+                            ("colDenHeII" variable nil (reparse-symbol function_parameters) [10149 10159]))                          
+                        :documentation " Input colDenHI in pymses code units (unit_density * unit_length).
+        Return tau ")
+                        (reparse-symbol indented_block_body) [10092 11766])
+                    ("get_Q_tot" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [11785 11789])
+                            ("outputid" variable nil (reparse-symbol function_parameters) [11791 11799]))                          )
+                        (reparse-symbol indented_block_body) [11771 11976])
+                    ("get_Q_tot_all" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [11999 12003]))                          )
+                        (reparse-symbol indented_block_body) [11981 12165]))                  
+                :type "class")
+                nil [9329 12165]))          
+      :file "radiation_module.py"
+      :pointmax 12223
+      :fsize 12222
+      :lastmodtime '(23613 8503 768879 533000)
+      :unmatched-syntax nil)
+    (semanticdb-table "semanticdb-table"
+      :major-mode python-mode
+      :tags 
+        '( ("\"\"\"
+sink.py
+Description: Use yt to calculate sink properties: star formation efficiency, and
+the number of sink particles
+
+@author: chongchonghe
+\"\"\"" code nil nil [47 195])
+            ("mpl_toolkits.axes_grid1" include nil nil [408 456])
+            ("mpl_toolkits.axisartist" include nil nil [457 493])
+            ("scipy" include nil nil [494 521])
+            ("utilities" include nil nil [522 545])
+            ("center" include nil nil [546 559])
+            ("astropy.units" include nil nil [560 585])
+            ("scipy.interpolate" include nil nil [586 622])
+            ("likeli" function
+               (:documentation " return the log likelihood. mu = np.log10(mass) "
+                :arguments 
+                  ( ("m1" variable nil (reparse-symbol function_parameters) [731 733])
+                    ("m2" variable nil (reparse-symbol function_parameters) [735 737])
+                    ("alpha" variable nil (reparse-symbol function_parameters) [739 744])
+                    ("mu" variable nil (reparse-symbol function_parameters) [746 748]))                  )
+                nil [720 933])
+            ("find_sigma" function
+               (:documentation " Return the most probable alpha and 1 sigam region of alpha,
+    given the log likelihood logl.
+
+    Return:
+    -------
+    alpha_max, alpha_minus, alpha_plus
+    "
+                :arguments 
+                  ( ("logl" variable nil (reparse-symbol function_parameters) [949 953])
+                    ("alpha" variable nil (reparse-symbol function_parameters) [955 960])
+                    ("deltalogl" variable nil (reparse-symbol function_parameters) [962 971]))                  )
+                nil [934 1341])
+            ("bayesian_imf_fit" function
+               (:documentation " Do a Bayesian fitting to mass with a power-law slope at -alpha
+    in range m1 to m2. Return alpha.
+    mass is the shifted sink mass.
+
+    Parameters
+    ----------
+    mass: [array], all the masses to fit with
+    m1, m2: fitting range
+
+    Returns
+    -------
+    (A, a_peak, a_peak_minus, a_peak_plus)
+    "
+                :arguments 
+                  ( ("mass" variable nil (reparse-symbol function_parameters) [1363 1367])
+                    ("m1" variable nil (reparse-symbol function_parameters) [1369 1371])
+                    ("m2" variable nil (reparse-symbol function_parameters) [1373 1375]))                  )
+                nil [1342 2511])
+            ("get_bins" function
+               (:documentation " Get the bins for IMF. Apply on shifted mass "
+                :arguments 
+                  ( ("mass" variable nil (reparse-symbol function_parameters) [2525 2529])
+                    ("maxBins" variable nil (reparse-symbol function_parameters) [2531 2538])
+                    ("m_min" variable nil (reparse-symbol function_parameters) [2545 2550]))                  )
+                nil [2512 2963])
+            ("plot_imf" function (:arguments 
+              ( ("ax" variable nil (reparse-symbol function_parameters) [2977 2979])
+                ("mass" variable nil (reparse-symbol function_parameters) [2981 2985])
+                ("bins" variable nil (reparse-symbol function_parameters) [2987 2991])
+                ("m_min" variable nil (reparse-symbol function_parameters) [3000 3005])
+                ("label" variable nil (reparse-symbol function_parameters) [3011 3016])
+                ("ylim" variable nil (reparse-symbol function_parameters) [3023 3027])
+                ("kwargs" variable nil (reparse-symbol function_parameters) [3034 3042]))              ) nil [2964 3647])
+            ("overplot_kroupa" function
+               (:parent "dummy"
+                :arguments 
+                  ( ("self" variable nil (reparse-symbol function_parameters) [3728 3732])
+                    ("m_sum" variable nil (reparse-symbol function_parameters) [3734 3739])
+                    ("m_max" variable nil (reparse-symbol function_parameters) [3741 3746])
+                    ("textxy" variable nil (reparse-symbol function_parameters) [3753 3759])
+                    ("ax" variable nil (reparse-symbol function_parameters) [3766 3768])
+                    ("m_min" variable nil (reparse-symbol function_parameters) [3795 3800])
+                    ("kwargs" variable nil (reparse-symbol function_parameters) [3807 3815]))                  
+                :documentation " over plot a Kroupa IMF curve. parameters are in log scale 
+    Normalized to total stellar mass 
+
+    Notes
+    -----
+    self is useless. I put it here for it to be copied in the Sink class
+    ")
+                nil [3708 5161])
+            ("overplot_kroupa_new" function
+               (:parent "dummy"
+                :arguments 
+                  ( ("self" variable nil (reparse-symbol function_parameters) [5186 5190])
+                    ("ax" variable nil (reparse-symbol function_parameters) [5192 5194])
+                    ("m_sum" variable nil (reparse-symbol function_parameters) [5196 5201])
+                    ("m_min" variable nil (reparse-symbol function_parameters) [5203 5208])
+                    ("m_max" variable nil (reparse-symbol function_parameters) [5215 5220])
+                    ("textxy" variable nil (reparse-symbol function_parameters) [5226 5232])
+                    ("kwargs" variable nil (reparse-symbol function_parameters) [5263 5271]))                  
+                :documentation " over plot a Kroupa IMF curve. parameters are in log scale 
+    Normalized to total stellar mass 
+
+    Notes
+    -----
+    self is useless. I put it here for it to be copied in the Sink class
+    ")
+                nil [5162 6215])
+            ("overplot_salpeter" function
+               (:documentation " Overplot a Salpeter line. textxy=[textx, texty] in
+    log scale "
+                :arguments 
+                  ( ("ax" variable nil (reparse-symbol function_parameters) [6238 6240])
+                    ("m_sum" variable nil (reparse-symbol function_parameters) [6242 6247])
+                    ("m_min" variable nil (reparse-symbol function_parameters) [6249 6254])
+                    ("m_max" variable nil (reparse-symbol function_parameters) [6261 6266])
+                    ("textxy" variable nil (reparse-symbol function_parameters) [6272 6278])
+                    ("kwargs" variable nil (reparse-symbol function_parameters) [6285 6293]))                  )
+                nil [6216 6846])
+            ("Sink" type
+               (:documentation " Read sink info from outputs, make plots of SFE, sink number, and IMF 
+    "
+                :superclasses ("Ramses")
+                :members 
+                  ( ("overplot_kroupa" variable nil (reparse-symbol indented_block_body) [6980 7017])
+                    ("find_SNs" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [12574 12578])
+                            ("lastoutput" variable nil (reparse-symbol function_parameters) [12580 12590])
+                            ("mSN" variable nil (reparse-symbol function_parameters) [12597 12600]))                          
+                        :documentation " Return the raw time (in Myr) of all SN explosions
+        !!! Apply to the version of RAMSES where all stars never die.
+        Return
+        ------
+        i:  the outputID when the first SN explode
+        time:  {list}, time - tRelax when the first SN explode
+        
+        Exeptions:
+        -1, 0
+        ")
+                        (reparse-symbol indented_block_body) [12561 14254])
+                    ("metal_yield" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [14275 14279])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [14281 14289]))                          )
+                        (reparse-symbol indented_block_body) [14259 15038])
+                    ("num_of_SN" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [15057 15061])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [15063 15071]))                          )
+                        (reparse-symbol indented_block_body) [15043 15348])
+                    ("sfe_time_length" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [15373 15377]))                          )
+                        (reparse-symbol indented_block_body) [15353 15734])
+                    ("plot_SFE" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [15752 15756])
+                            ("ax" variable nil (reparse-symbol function_parameters) [15758 15760])
+                            ("label" variable nil (reparse-symbol function_parameters) [15767 15772])
+                            ("color" variable nil (reparse-symbol function_parameters) [15779 15784])
+                            ("kwargs" variable nil (reparse-symbol function_parameters) [15791 15799]))                          
+                        :documentation " Plot a single SFE curve. ")
+                        (reparse-symbol indented_block_body) [15739 18994])
+                    ("find_SF_length" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [19018 19022])
+                            ("sink_masses" variable nil (reparse-symbol function_parameters) [19024 19035]))                          )
+                        (reparse-symbol indented_block_body) [18999 19636])
+                    ("display_summary" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [19661 19665])
+                            ("ax" variable nil (reparse-symbol function_parameters) [19667 19669])
+                            ("kwargs" variable nil (reparse-symbol function_parameters) [19676 19684]))                          
+                        :documentation " Summary of SFE ")
+                        (reparse-symbol indented_block_body) [19641 20475])
+                    ("plot_SFE_and_MSM" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [21247 21251])
+                            ("ax" variable nil (reparse-symbol function_parameters) [21253 21255])
+                            ("hold" variable nil (reparse-symbol function_parameters) [21262 21266])
+                            ("isDisplayLegend" variable nil (reparse-symbol function_parameters) [21274 21289])
+                            ("kwargs" variable nil (reparse-symbol function_parameters) [21322 21330]))                          )
+                        (reparse-symbol indented_block_body) [21226 23175])
+                    ("MassFunc" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [23193 23197])
+                            ("ax" variable nil (reparse-symbol function_parameters) [23199 23201])
+                            ("bins" variable nil (reparse-symbol function_parameters) [23208 23212])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [23221 23229])
+                            ("tff" variable nil (reparse-symbol function_parameters) [23236 23239])
+                            ("isFill" variable nil (reparse-symbol function_parameters) [23263 23269])
+                            ("label" variable nil (reparse-symbol function_parameters) [23277 23282])
+                            ("plotstyle" variable nil (reparse-symbol function_parameters) [23289 23298]))                          
+                        :documentation "
+        Plot the mass function
+        kwargs could be: refPoint = [x_start, x_end], bin_max, bin_min, 
+        nbins, xlim, ylim, (ALL IN DEX), isDisplayMSM(bool)
+        ")
+                        (reparse-symbol indented_block_body) [23180 25434])
+                    ("imf_fit" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [25451 25455])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [25457 25465]))                          
+                        :documentation "
+        Do a Bayesian inference on the IMF slope.
+        Returns
+        -------
+        [(m1, m2, A, alpha_peak, alpha_minus, alpha_plus), ...]
+        ")
+                        (reparse-symbol indented_block_body) [25439 26209])
+                    ("imf_summary_text" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [28822 28826])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [28828 28836]))                          
+                        :documentation " Return the texts of the mean sink mass ")
+                        (reparse-symbol indented_block_body) [28801 29703])
+                    ("imf_summary" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [29724 29728])
+                            ("ax" variable nil (reparse-symbol function_parameters) [29730 29732])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [29734 29742])
+                            ("pos" variable nil (reparse-symbol function_parameters) [29749 29752])
+                            ("kwargs" variable nil (reparse-symbol function_parameters) [29759 29767]))                          
+                        :documentation " Write the mean sink mass at the top right corner ")
+                        (reparse-symbol indented_block_body) [29708 30977]))                  
+                :type "class")
+                nil [6869 30977]))          
+      :file "sink.py"
+      :pointmax 31756
+      :fsize 31755
+      :lastmodtime '(23616 115 891323 570000)
+      :unmatched-syntax '((NAME 30794 . 30797) (IF 30813 . 30815) (ELSE 30828 . 30832) (NAME 24032 . 24036) (IF 24058 . 24060) (ELSE 24070 . 24074)))
+    (semanticdb-table "semanticdb-table"
+      :major-mode python-mode
+      :tags 
+        '( ("\"\"\"A number of tools for use in the whole RAMSES project
+\"\"\"" code nil nil [1 61])
+            ("scipy.interpolate" include nil nil [63 101])
+            ("ramses" include nil nil [125 145])
+            ("units" include nil nil [212 224])
+            ("matplotlib.pyplot" include nil nil [225 256])
+            ("plotutils" include nil nil [257 273])
+            ("tools" include nil nil [274 333])
+            ("star_num" function
+               (:documentation "
+    Return the number of stars in the given output
+
+    It is assumed that the working directory is in Job#.#.
+
+    Parameters
+    ----------
+    outputID : integer
+        The index of the output.
+
+    Returns
+    -------
+    n : integer or None
+        an integer if the output with outoutID exists.
+        None if not exists.
+
+    "
+                :arguments 
+                  ( ("outputID" variable nil (reparse-symbol function_parameters) [348 356])
+                    ("jobPath" variable nil (reparse-symbol function_parameters) [358 365]))                  )
+                nil [335 1161])
+            ("star_num_all" function
+               (:documentation " Return the num of stars in all output as a list
+    "
+                :arguments 
+                  ( ("nstart" variable nil (reparse-symbol function_parameters) [1180 1186])
+                    ("nend" variable nil (reparse-symbol function_parameters) [1193 1197])
+                    ("jobPath" variable nil (reparse-symbol function_parameters) [1204 1211]))                  )
+                nil [1163 1628])
+            ("mass_to_lifetime" function
+               (:documentation " Schaller et al. (1992). (See also MBW Eq. 10.72)
+    Return
+    ------
+    lifetime in Myr
+    "
+                :arguments 
+                  ( ("mass" variable nil (reparse-symbol function_parameters) [1651 1655]))                  )
+                nil [1630 1889])
+            ("mass_to_temp" function
+               (:documentation " input: mass (M_sun); output: T (K) "
+                :arguments 
+                  ( ("mass" variable nil (reparse-symbol function_parameters) [1908 1912]))                  )
+                nil [1891 2233])
+            ("mass_to_metal_yield" function
+               (:documentation "
+    Parameters
+    ----------
+    mass: array (any dimension)
+    "
+                :arguments 
+                  ( ("masslist" variable nil (reparse-symbol function_parameters) [2259 2267]))                  )
+                nil [2235 3843])
+            ("TLIM" variable nil nil [3845 3899])
+            ("kroupa_int" function
+               (:documentation " Calculate analytically the integral of the kroupa IMF 
+    from m=a to b.
+    "
+                :arguments 
+                  ( ("a" variable nil (reparse-symbol function_parameters) [3978 3979])
+                    ("b" variable nil (reparse-symbol function_parameters) [3981 3982]))                  )
+                nil [3963 4355])
+            ("kroupa_sample" function (:arguments 
+              ( ("m_min" variable nil (reparse-symbol function_parameters) [4374 4379])
+                ("m_max" variable nil (reparse-symbol function_parameters) [4381 4386]))              ) nil [4356 4600])
+            ("sample_kroupa" function
+               (:documentation " Generate n masses according to Kroupa IMF
+    Input number of particles
+    Output masses of sample particles 
+    "
+                :arguments 
+                  ( ("n" variable nil (reparse-symbol function_parameters) [4619 4620])
+                    ("m_min" variable nil (reparse-symbol function_parameters) [4624 4629])
+                    ("m_max" variable nil (reparse-symbol function_parameters) [4636 4641]))                  )
+                nil [4601 5108])
+            ("sub_sample_imf" function
+               (:documentation " Do a sampling of Kroupa IMF to replace each sink particle 
+    "
+                :arguments 
+                  ( ("m" variable nil (reparse-symbol function_parameters) [5129 5130])
+                    ("m_min" variable nil (reparse-symbol function_parameters) [5132 5137])
+                    ("m_max" variable nil (reparse-symbol function_parameters) [5144 5149]))                  )
+                nil [5110 5326])
+            ("out_name" function
+               (:documentation " Returns the output file names of efMpi "
+                :arguments 
+                  ( ("atom" variable nil (reparse-symbol function_parameters) [5341 5345])
+                    ("outID" variable nil (reparse-symbol function_parameters) [5347 5352])
+                    ("sinkID" variable nil (reparse-symbol function_parameters) [5354 5360])
+                    ("nsidePow" variable nil (reparse-symbol function_parameters) [5362 5370]))                  )
+                nil [5328 5584])
+            ("out_all_name" function (:arguments 
+              ( ("atom" variable nil (reparse-symbol function_parameters) [5603 5607])
+                ("outID" variable nil (reparse-symbol function_parameters) [5609 5614])
+                ("nsidePow" variable nil (reparse-symbol function_parameters) [5616 5624]))              ) nil [5586 5720])
+            ("plot_main" function
+               (:documentation " Plot a 3 by 5 grid for all jobs.
+    figsize is only used to set the margin. 
+    "
+                :arguments 
+                  ( ("plot1" variable nil (reparse-symbol function_parameters) [5736 5741])
+                    ("plot2" variable nil (reparse-symbol function_parameters) [5743 5748])
+                    ("figsize" variable nil (reparse-symbol function_parameters) [5755 5762]))                  )
+                nil [5722 10042])
+            ("plot_all_jobs_in_one" function
+               (:documentation " Plot one parameter from all jobs in one figure
+    Parameters
+    ----------
+    get_x_y: function
+        given a jobid, return the x and y you want to plot
+    kwargs: plotting kwargs
+    
+    "
+                :arguments 
+                  ( ("get_x_y" variable nil (reparse-symbol function_parameters) [10069 10076])
+                    ("xscale" variable nil (reparse-symbol function_parameters) [10078 10084])
+                    ("yscale" variable nil (reparse-symbol function_parameters) [10092 10098])
+                    ("xlabel" variable nil (reparse-symbol function_parameters) [10131 10137])
+                    ("ylabel" variable nil (reparse-symbol function_parameters) [10144 10150])
+                    ("kwargs" variable nil (reparse-symbol function_parameters) [10157 10165]))                  )
+                nil [10044 10880])
+            ("movie_png_fn" function (:arguments 
+              ( ("jobpath" variable nil (reparse-symbol function_parameters) [10899 10906])
+                ("i" variable nil (reparse-symbol function_parameters) [10908 10909]))              ) nil [10882 10974])
+            ("get_all_jobs_as_dict" function
+               (:documentation "
+    func: function
+        A function that takes in jobid and returns a tuple of variables
+    "
+                :arguments 
+                  ( ("func" variable nil (reparse-symbol function_parameters) [11001 11005])
+                    ("n" variable nil (reparse-symbol function_parameters) [11007 11008]))                  )
+                nil [10976 12185]))          
+      :file "utilities.py"
+      :pointmax 12185
+      :fsize 12184
+      :lastmodtime '(23572 7627 277430 157000)
+      :unmatched-syntax '((NAME 6863 . 6868) (IF 6876 . 6878) (ELSE 6897 . 6901) (NAME 1967 . 1973) (IF 1995 . 1997) (ELSE 2010 . 2014) (NAME 1288 . 1289) (IF 1299 . 1301) (ELSE 1321 . 1325)))
+    (semanticdb-table "semanticdb-table"
+      :file "units.py"
+      :fsize 703
+      :lastmodtime '(23533 54988 442479 502000))
+    (semanticdb-table "semanticdb-table"
+      :major-mode python-mode
+      :tags 
+        '( ("\"\"\"
+
+@author: chongchonghe
+\"\"\"" code nil nil [47 77])
+            ("sink" include nil nil [79 97])
+            ("center2" include nil nil [98 112])
+            ("plotutils" code nil nil [114 151])
+            ("run_all" function nil nil [999 2694])
+            ("run_met" function (:documentation " Plot the SFE curve for various metallicities ") nil [2695 3109])
+            ("if" code nil nil [3111 3253]))          
+      :file "sfe_t.py"
+      :pointmax 3253
+      :fsize 3252
+      :lastmodtime '(23616 7663 326100 536000)
+      :unmatched-syntax nil)
+    (semanticdb-table "semanticdb-table"
+      :major-mode python-mode
+      :tags 
+        '( ("\"\"\"imf.py
+What this file is about.
+
+Attributes
+----------
+classes and functions defined
+
+Example
+-------
+
+Notes
+-----
+
+\"\"\"" code nil nil [47 169])
+            ("os" include nil nil [382 391])
+            ("matplotlib.pyplot" include nil nil [392 423])
+            ("numpy" include nil nil [424 442])
+            ("sys" include nil nil [443 453])
+            ("center" include nil nil [454 467])
+            ("ramses" include nil nil [468 481])
+            ("utilities" include nil nil [482 498])
+            ("plotutils" include nil nil [520 536])
+            ("sink" include nil nil [537 548])
+            ("plotutils" code nil nil [551 589])
+            ("set_imf_xlabel" function (:arguments 
+              ( ("axes" variable nil (reparse-symbol function_parameters) [611 615]))              ) nil [592 809])
+            ("pick_indices" function
+               (:documentation "
+    Parameters
+    ----------
+    t: array 
+        (time - t_relax) / t_ff
+    "
+                :arguments 
+                  ( ("t" variable nil (reparse-symbol function_parameters) [827 828]))                  )
+                nil [810 1292])
+            ("plot_single_imf" function
+               (:documentation " Plot the MFs of one job.
+    The indxes must be in reversed order (from big to small) "
+                :arguments 
+                  ( ("ax" variable nil (reparse-symbol function_parameters) [1313 1315])
+                    ("jobid" variable nil (reparse-symbol function_parameters) [1317 1322])
+                    ("is_set_title" variable nil (reparse-symbol function_parameters) [1324 1336]))                  )
+                nil [1293 3979])
+            ("run_imf" function nil nil [3980 5095])
+            ("plot_fit_imf" function (:arguments 
+              ( ("ax" variable nil (reparse-symbol function_parameters) [5427 5429])
+                ("jobid" variable nil (reparse-symbol function_parameters) [5431 5436]))              ) nil [5410 6724])
+            ("run_fit_imf" function nil nil [6725 7232])
+            ("run" function
+               (:parent "dummy"
+                :arguments 
+                  ( ("self" variable nil (reparse-symbol function_parameters) [7241 7245])
+                    ("fig_size_xy" variable nil (reparse-symbol function_parameters) [7247 7258]))                  )
+                nil [7233 7540])
+            ("fit_line_to_imf" function
+               (:documentation " Input log(m)'s and dN/dlog(m)'s, output a straight line "
+                :arguments 
+                  ( ("bins" variable nil (reparse-symbol function_parameters) [7561 7565])
+                    ("n" variable nil (reparse-symbol function_parameters) [7567 7568]))                  )
+                nil [7541 7916])
+            ("run_imf_met" function nil nil [7917 8378])
+            ("run_imf_fit" function nil nil [8379 8428])
+            ("get_sample_imf_file_basename" function (:arguments 
+              ( ("jobid" variable nil (reparse-symbol function_parameters) [8462 8467])
+                ("outputID" variable nil (reparse-symbol function_parameters) [8469 8477]))              ) nil [8429 8730])
+            ("MIN" variable nil nil [8731 8749])
+            ("sample_imf" function
+               (:documentation " Sample the sink particles from the last snapshots of a
+    simulation with both Salpeter and Kroupa IMF.
+    Each version has different m_min:
+    - min0: 0.01
+    - min1: 0.08
+    "
+                :arguments 
+                  ( ("jobid" variable nil (reparse-symbol function_parameters) [8766 8771]))                  )
+                nil [8751 9462])
+            ("run_sample_imf" function (:documentation " Sample the sink particles from the last snapshots of a
+    simulation with both Salpeter and Kroupa IMF.
+    ") nil [9463 9671])
+            ("plot_sp_imf_one_job" function (:arguments 
+              ( ("ax" variable nil (reparse-symbol function_parameters) [9696 9698])
+                ("jobid" variable nil (reparse-symbol function_parameters) [9700 9705])
+                ("min_type" variable nil (reparse-symbol function_parameters) [9707 9715])
+                ("is_sal" variable nil (reparse-symbol function_parameters) [9719 9725]))              ) nil [9672 11146])
+            ("plot_sp_imf" function (:arguments 
+              ( ("jobid" variable nil (reparse-symbol function_parameters) [11163 11168]))              ) nil [11147 11510])
+            ("run_sp_imf" function nil nil [11511 11605])
+            ("representative_imf_sampling" function
+               (:documentation " Plot the sampling of IMF for Job2.3 and 4.4
+    "
+                :arguments 
+                  ( ("is_sal" variable nil (reparse-symbol function_parameters) [11638 11644]))                  )
+                nil [11606 12368])
+            ("run_main" function nil nil [12406 12464])
+            ("if" code nil nil [12509 12651]))          
+      :file "imf.py"
+      :pointmax 12651
+      :fsize 12650
+      :lastmodtime '(23571 9425 523624 820000)
+      :unmatched-syntax '((NAME 6632 . 6634) (IF 6648 . 6650) (ELSE 6656 . 6660) (NAME 6586 . 6588) (IF 6602 . 6604) (ELSE 6610 . 6614)))
+    (semanticdb-table "semanticdb-table"
+      :major-mode python-mode
+      :tags 
+        '( ("\"\"\"
+Replacing center.py
+
+@author: chongchonghe
+\"\"\"" code nil nil [47 97])
+            ("HYDRO_FRAC" variable nil nil [111 128])
+            ("sigma0" variable nil nil [129 147])
+            ("mH" variable nil nil [185 200])
+            ("mHe" variable nil nil [206 222])
+            ("nH2nHe" code nil nil [223 276])
+            ("eHI" variable nil nil [277 287])
+            ("eHeI" variable nil nil [288 299])
+            ("eHeII" variable nil nil [300 312])
+            ("atoms" variable nil nil [313 342])
+            ("unit_lum" variable nil nil [343 358])
+            ("qscale" code nil nil [373 396])
+            ("LOG_TAO_LIM" variable nil nil [398 423])
+            ("jobnames" variable nil nil [446 935])
+            ("grid_fig_size" variable nil nil [938 982])
+            ("plot_range_in_tff" variable nil nil [984 1012])
+            ("global_version" variable nil nil [1113 1135]))          
+      :file "center2.py"
+      :pointmax 1136
+      :fsize 1135
+      :lastmodtime '(23616 320 794659 16000)
+      :unmatched-syntax nil)
+    (semanticdb-table "semanticdb-table"
+      :major-mode python-mode
+      :tags 
+        '( ("\"\"\"efMpiPlot.py
+Compute escape fraction and make figures
+sky-map plotting tool
+
+This module provides functions to plot sky map of escape
+fraction of sink particles in RAMSES simulation
+
+Attributes
+----------
+class EfPlot
+
+Example
+-------
+
+1. 
+
+Notes
+-----
+
+
+\"\"\"" code nil nil [47 308])
+            ("numpy" include nil nil [603 621])
+            ("ef_collect" include nil nil [622 656])
+            ("SimplePlotsServer" include nil nil [657 698])
+            ("radiation_module" include nil nil [699 729])
+            ("utilities" include nil nil [751 774])
+            ("center2" include nil nil [775 789])
+            ("tools" include nil nil [790 802])
+            ("try" code nil nil [803 861])
+            ("json" include nil nil [861 872])
+            ("plotutils" include nil nil [873 889])
+            ("figFormat" variable nil nil [1005 1022])
+            ("isNewStyle" variable nil nil [1023 1040])
+            ("EfPlot" type
+               (:documentation "Read data from ef/ef_Job#.# and plot sky-map
+
+    Usage:
+    >>> ef = EfPlot('Job1.2')
+    >>> ef.plot_ef_vs_t()
+    >>> ef.plot_Q()
+    "
+                :superclasses ("InterpolateTau" "Radiation" "Ramses")
+                :members 
+                  ( ("get_tau" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [1949 1953])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [1955 1963])
+                            ("nsidePow" variable nil (reparse-symbol function_parameters) [1965 1973])
+                            ("field" variable nil (reparse-symbol function_parameters) [1977 1982]))                          
+                        :documentation "
+        Read the colDen* files (ef_new_collected files) and return the
+        tau array of an output with given nsidePow for all stars in
+        all directions.
+
+        Returns
+        -------
+        tau : numpy array
+            shape = [n_stars, Npixel]. If no stars, return an empty array
+        ")
+                        (reparse-symbol indented_block_body) [1937 2911])
+                    ("get_Q" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [2926 2930])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [2932 2940])
+                            ("nsidePow" variable nil (reparse-symbol function_parameters) [2942 2950])
+                            ("field" variable nil (reparse-symbol function_parameters) [2954 2959])
+                            ("params" variable nil (reparse-symbol function_parameters) [2966 2972]))                          
+                        :documentation "
+        Return Q (in unit_lum, which is 1e44 /s) from each of the stars.
+
+        Parameters
+        ----------
+        params : dictionary
+            A dictionary of parameters passed from the central
+            parameter control, including is_scale_mass, is_scale_Q,
+            is_always_rescale_Q.
+
+        Returns
+        -------
+        Q : None or <array>, ndim=1.
+            Q * 1e-44 from all directions.
+        ")
+                        (reparse-symbol indented_block_body) [2916 5943])
+                    ("get_Qesc" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [5961 5965])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [5967 5975])
+                            ("nsidePow" variable nil (reparse-symbol function_parameters) [5977 5985])
+                            ("field" variable nil (reparse-symbol function_parameters) [5989 5994])
+                            ("kind" variable nil (reparse-symbol function_parameters) [6001 6005])
+                            ("params" variable nil (reparse-symbol function_parameters) [6030 6036]))                          
+                        :documentation "# Return the escaped Q_esc * 1e-44 in all individual directions
+        # and the total Q. At the same time, set self.QEscIndiv to be the
+        # Q_esc of all individual *stars*.
+
+        Return Q_esc for 1) when kind='dir', each directions, summed
+        over all stars; 2) when kind='star', each star, summed over
+        all directions
+
+        Parameters
+        ----------
+        kind : string
+            'dir': return Q_esc for each direction, summed over all stars
+            'star': return Q_esc for each star, summed over all directions
+        params : dictionary
+            A dictionary of parameters passed from the central
+            parameter control, including is_scale_mass, is_scale_Q,
+            is_always_rescale_Q.
+
+        Returns
+        -------
+        QEsc : <array> or []
+            The escaped Q (in units of unit_lum) from all directions
+            for each stars, or from all stars for each direction
+            ndim = 1. shape = Nstar or Npixel
+        
+        Exceptions
+        ----------
+        FileNotFoundError
+
+        ")
+                        (reparse-symbol indented_block_body) [5948 9195])
+                    ("Qesc_filename" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [9218 9222])
+                            ("nsidePow" variable nil (reparse-symbol function_parameters) [9224 9232])
+                            ("field" variable nil (reparse-symbol function_parameters) [9234 9239])
+                            ("kind" variable nil (reparse-symbol function_parameters) [9241 9245])
+                            ("isSum" variable nil (reparse-symbol function_parameters) [9254 9259])
+                            ("params" variable nil (reparse-symbol function_parameters) [9289 9295]))                          
+                        :documentation " Return the name of the files that store Q_esc or Q_tot
+        Parameters
+        ----------
+        kind: string
+            'Qesc' or 'Q'
+        isSum: bool
+            If True, sum over time and do an extrapolation.
+        params: dict
+            Param dict
+        
+        ")
+                        (reparse-symbol indented_block_body) [9200 10153])
+                    ("stage_Qesc" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [10173 10177])
+                            ("nsidePow" variable nil (reparse-symbol function_parameters) [10179 10187])
+                            ("field" variable nil (reparse-symbol function_parameters) [10191 10196])
+                            ("params" variable nil (reparse-symbol function_parameters) [10203 10209]))                          
+                        :documentation " Stage Q_esc_all_star_all_dir, Q_tot_all_star_all_dir
+        Only redo when more outputs are available.
+        ")
+                        (reparse-symbol indented_block_body) [10158 11469])
+                    ("get_Qesc_tot" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [11491 11495])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [11497 11505])
+                            ("nsidePow" variable nil (reparse-symbol function_parameters) [11507 11515])
+                            ("field" variable nil (reparse-symbol function_parameters) [11517 11522])
+                            ("params" variable nil (reparse-symbol function_parameters) [11524 11530]))                          
+                        :documentation " Get the total Q_esc from a snapshot, summed over all stars
+        and all directions.
+        ")
+                        (reparse-symbol indented_block_body) [11474 11788])
+                    ("get_time_intg_Qesc" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [11816 11820])
+                            ("nsidePow" variable nil (reparse-symbol function_parameters) [11822 11830])
+                            ("field" variable nil (reparse-symbol function_parameters) [11834 11839])
+                            ("params" variable nil (reparse-symbol function_parameters) [11846 11852]))                          
+                        :documentation " 
+        Load Qesc_filename files and calculate the total Q and Q_esc
+        (in unit_lum) summed over all stars in all directions and their
+        whole lifetime. <f_esc> = sum_Qesc / sum_Q
+
+        Returns
+        -------
+        sum_Q, sum_Qesc
+            - sum_Q: double
+                The total Q emitted from all stars from all its lifetime
+        ")
+                        (reparse-symbol indented_block_body) [11793 13607])
+                    ("ytplot" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [13623 13627])
+                            ("rect" variable nil (reparse-symbol function_parameters) [13629 13633])
+                            ("figsize" variable nil (reparse-symbol function_parameters) [13635 13642])
+                            ("figname" variable nil (reparse-symbol function_parameters) [13644 13651])
+                            ("dpi" variable nil (reparse-symbol function_parameters) [13653 13656])
+                            ("zlim" variable nil (reparse-symbol function_parameters) [13658 13662])
+                            ("is_cb" variable nil (reparse-symbol function_parameters) [13675 13680])
+                            ("is_xlabel" variable nil (reparse-symbol function_parameters) [13703 13712])
+                            ("logQ_lim" variable nil (reparse-symbol function_parameters) [13719 13727])
+                            ("nsidePow" variable nil (reparse-symbol function_parameters) [13749 13757])
+                            ("sinkcmap" variable nil (reparse-symbol function_parameters) [13761 13769])
+                            ("cmaptype" variable nil (reparse-symbol function_parameters) [13778 13786]))                          
+                        :documentation " Plot a density projection with sink particles overplotted,
+        for three snapshots of a given simulation, vstached together.
+        ")
+                        (reparse-symbol indented_block_body) [13612 21201])
+                    ("plot_sky_single" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [21226 21230])
+                            ("ax" variable nil (reparse-symbol function_parameters) [21232 21234])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [21236 21244])
+                            ("vlim" variable nil (reparse-symbol function_parameters) [21246 21250])
+                            ("starID" variable nil (reparse-symbol function_parameters) [21252 21258])
+                            ("nsidePow" variable nil (reparse-symbol function_parameters) [21265 21273])
+                            ("field" variable nil (reparse-symbol function_parameters) [21301 21306])
+                            ("is_log" variable nil (reparse-symbol function_parameters) [21313 21319])
+                            ("kind" variable nil (reparse-symbol function_parameters) [21327 21331])
+                            ("params" variable nil (reparse-symbol function_parameters) [21338 21344])
+                            ("is_return" variable nil (reparse-symbol function_parameters) [21373 21382]))                          
+                        :documentation " Plot a single skymap. Always fetch image data form
+        hp.mollview and replot with imshow
+        ")
+                        (reparse-symbol indented_block_body) [21206 24839])
+                    ("sky_plot_text" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [24862 24866])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [24868 24876])
+                            ("nsidePow" variable nil (reparse-symbol function_parameters) [24878 24886])
+                            ("field" variable nil (reparse-symbol function_parameters) [24888 24893])
+                            ("params" variable nil (reparse-symbol function_parameters) [24895 24901]))                          
+                        :documentation " Return the text on the top left corner of the skymap.
+        ")
+                        (reparse-symbol indented_block_body) [24844 25632])
+                    ("qesc_bar" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [25663 25667])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [25669 25677])
+                            ("nsidePow" variable nil (reparse-symbol function_parameters) [25679 25687])
+                            ("ax" variable nil (reparse-symbol function_parameters) [25691 25693])
+                            ("fig" variable nil (reparse-symbol function_parameters) [25700 25703])
+                            ("vlinewidth" variable nil (reparse-symbol function_parameters) [25727 25737]))                          
+                        :documentation "
+        Bar plot of Q_esc * 1e-48 for all stars
+        ")
+                        (reparse-symbol indented_block_body) [25650 28065])
+                    ("qesc_cumulative" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [28090 28094])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [28096 28104])
+                            ("nsidePow" variable nil (reparse-symbol function_parameters) [28106 28114])
+                            ("ax" variable nil (reparse-symbol function_parameters) [28118 28120])
+                            ("xtype" variable nil (reparse-symbol function_parameters) [28151 28156]))                          
+                        :documentation "
+        Plot cumulative Q_esc on sink particles ranked by Q_esc
+        ")
+                        (reparse-symbol indented_block_body) [28070 28678])
+                    ("ytplot_make_cb" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [28702 28706])
+                            ("figsize" variable nil (reparse-symbol function_parameters) [28708 28715])
+                            ("dpi" variable nil (reparse-symbol function_parameters) [28717 28720])
+                            ("figname" variable nil (reparse-symbol function_parameters) [28722 28729])
+                            ("logQ_lim" variable nil (reparse-symbol function_parameters) [28731 28739]))                          )
+                        (reparse-symbol indented_block_body) [28683 29897])
+                    ("add_inner_title" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [29922 29926])
+                            ("ax" variable nil (reparse-symbol function_parameters) [29928 29930])
+                            ("title" variable nil (reparse-symbol function_parameters) [29932 29937])
+                            ("loc" variable nil (reparse-symbol function_parameters) [29939 29942])
+                            ("size" variable nil (reparse-symbol function_parameters) [29944 29948])
+                            ("kwargs" variable nil (reparse-symbol function_parameters) [29955 29963]))                          
+                        :documentation " ?
+        ")
+                        (reparse-symbol indented_block_body) [29902 30461])
+                    ("plot_sky" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [30479 30483])
+                            ("outputIDs" variable nil (reparse-symbol function_parameters) [30485 30494])
+                            ("starID" variable nil (reparse-symbol function_parameters) [30496 30502])
+                            ("nsidePow" variable nil (reparse-symbol function_parameters) [30509 30517])
+                            ("field" variable nil (reparse-symbol function_parameters) [30521 30526])
+                            ("is_log" variable nil (reparse-symbol function_parameters) [30550 30556])
+                            ("vmin" variable nil (reparse-symbol function_parameters) [30564 30568])
+                            ("vmax" variable nil (reparse-symbol function_parameters) [30575 30579])
+                            ("plot_type" variable nil (reparse-symbol function_parameters) [30586 30595])
+                            ("figName" variable nil (reparse-symbol function_parameters) [30619 30626])
+                            ("params" variable nil (reparse-symbol function_parameters) [30633 30639]))                          
+                        :documentation "
+        Make a sky map of a given star (starID) or the average of all stars
+        (starID=None).
+
+        eg. jobID='Job1.2', outputID=7, starID=None, nsidePow=0
+        ")
+                        (reparse-symbol indented_block_body) [30466 33150])
+                    ("get_all_mean_ef" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [33175 33179])
+                            ("nsidePow" variable nil (reparse-symbol function_parameters) [33181 33189])
+                            ("field" variable nil (reparse-symbol function_parameters) [33193 33198])
+                            ("rescale" variable nil (reparse-symbol function_parameters) [33205 33212]))                          
+                        :documentation "
+        Abandoned. Do NOT use.
+        Calculate <f_esc> of one simulation.
+        What is done:
+            1. Save basic ef info into a json file
+            4. self.QEscTot, self.TotTot, self.QIndexes
+        ")
+                        (reparse-symbol indented_block_body) [33155 36060])
+                    ("plot_ef_vs_t" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [36082 36086])
+                            ("field" variable nil (reparse-symbol function_parameters) [36088 36093])
+                            ("ax" variable nil (reparse-symbol function_parameters) [36100 36102])
+                            ("nsidePow" variable nil (reparse-symbol function_parameters) [36130 36138])
+                            ("hold" variable nil (reparse-symbol function_parameters) [36142 36146])
+                            ("kwargs" variable nil (reparse-symbol function_parameters) [36154 36162]))                          
+                        :documentation " Plot escape fraction as a function of time ")
+                        (reparse-symbol indented_block_body) [36065 37414])
+                    ("save_basic" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [37434 37438])
+                            ("field" variable nil (reparse-symbol function_parameters) [37440 37445])
+                            ("nsidePow" variable nil (reparse-symbol function_parameters) [37447 37455])
+                            ("rescale" variable nil (reparse-symbol function_parameters) [37457 37464]))                          )
+                        (reparse-symbol indented_block_body) [37419 38777])
+                    ("plot_Q" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [38793 38797])
+                            ("field" variable nil (reparse-symbol function_parameters) [38799 38804])
+                            ("ax" variable nil (reparse-symbol function_parameters) [38811 38813])
+                            ("nsidePow" variable nil (reparse-symbol function_parameters) [38820 38828])
+                            ("rescale" variable nil (reparse-symbol function_parameters) [38832 38839])
+                            ("hold" variable nil (reparse-symbol function_parameters) [38862 38866])
+                            ("legend" variable nil (reparse-symbol function_parameters) [38874 38880])
+                            ("kwargs" variable nil (reparse-symbol function_parameters) [38888 38896]))                          
+                        :documentation " Plot escape fraction as a function of time
+        Note Q = Q_real / 1e44 ")
+                        (reparse-symbol indented_block_body) [38782 43053])
+                    ("ytplot_bk" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [43094 43098])
+                            ("ax_cols" variable nil (reparse-symbol function_parameters) [43100 43107])
+                            ("fig" variable nil (reparse-symbol function_parameters) [43109 43112])
+                            ("nsidePow" variable nil (reparse-symbol function_parameters) [43114 43122])
+                            ("sinkcmap" variable nil (reparse-symbol function_parameters) [43141 43149])
+                            ("cmaptype" variable nil (reparse-symbol function_parameters) [43158 43166]))                          
+                        :documentation " Attempted to use subplots but failed.
+        Plot a density projection with sink particles overplotted
+        ")
+                        (reparse-symbol indented_block_body) [43080 49676])
+                    ("get_ef_dust" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [49697 49701])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [49703 49711])
+                            ("nsidePow" variable nil (reparse-symbol function_parameters) [49713 49721]))                          
+                        :documentation "
+        Return the
+        :param outputID:
+        :param nsidePow:
+        :return:
+        ")
+                        (reparse-symbol indented_block_body) [49681 50921])
+                    ("make_dir" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [50939 50943]))                          
+                        :documentation " Make necessary directories to store the figures ")
+                        (reparse-symbol indented_block_body) [50926 51127])
+                    ("plot_single" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [53593 53597])
+                            ("ef" variable nil (reparse-symbol function_parameters) [53599 53601])
+                            ("figPath" variable nil (reparse-symbol function_parameters) [53603 53610])
+                            ("vmin" variable nil (reparse-symbol function_parameters) [53612 53616])
+                            ("vmax" variable nil (reparse-symbol function_parameters) [53623 53627])
+                            ("title" variable nil (reparse-symbol function_parameters) [53634 53639])
+                            ("nlocs" variable nil (reparse-symbol function_parameters) [53644 53649]))                          
+                        :documentation "  Make a sky map of a given ef and save as figPath
+        In log scale if isNewStype
+        ")
+                        (reparse-symbol indented_block_body) [53577 54849]))                  
+                :type "class")
+                nil [1545 54849])
+            ("run_ef_prj3" function nil nil [54870 59063])
+            ("plot_Q_single" function
+               (:documentation " Plot Q(t) of a single job. Used by utilities.plot_main to make
+    a final figure.
+    "
+                :arguments 
+                  ( ("ax" variable nil (reparse-symbol function_parameters) [59092 59094])
+                    ("jobid" variable nil (reparse-symbol function_parameters) [59096 59101])
+                    ("field" variable nil (reparse-symbol function_parameters) [59103 59108]))                  )
+                nil [59074 59766])
+            ("if" code nil nil [59769 60142]))          
+      :file "efMpiPlot.py"
+      :pointmax 60449
+      :fsize 60448
+      :lastmodtime '(23614 22222 490523 41000)
+      :unmatched-syntax '((NAME 56094 . 56103) (IF 56111 . 56113) (ELSE 56129 . 56133) (NAME 56043 . 56051) (IF 56056 . 56058) (ELSE 56075 . 56079) (NAME 31759 . 31770) (IF 31802 . 31804) (ELSE 31814 . 31818) (NAME 25182 . 25190) (IF 25215 . 25217) (ELSE 25230 . 25234) (NAME 10799 . 10805) (IF 10811 . 10813) (ELSE 10834 . 10838) (NAME 9943 . 9949) (IF 9966 . 9968) (ELSE 9975 . 9979)))
+    (semanticdb-table "semanticdb-table"
+      :major-mode python-mode
+      :tags 
+        '( ("\"\"\"
+
+@author: chongchonghe
+\"\"\"" code nil nil [47 77])
+            ("Q_vs_m" function
+               (:documentation " eg. jobID='2.2', xfield='gas', '*', or 'SFE' "
+                :arguments 
+                  ( ("jobID" variable nil (reparse-symbol function_parameters) [7261 7266])
+                    ("ax" variable nil (reparse-symbol function_parameters) [7268 7270])
+                    ("field" variable nil (reparse-symbol function_parameters) [7272 7277])
+                    ("colors" variable nil (reparse-symbol function_parameters) [7279 7285])
+                    ("markers" variable nil (reparse-symbol function_parameters) [7287 7294])
+                    ("isLabel" variable nil (reparse-symbol function_parameters) [7296 7303])
+                    ("xscale" variable nil (reparse-symbol function_parameters) [7311 7317])
+                    ("xfield" variable nil (reparse-symbol function_parameters) [7332 7338])
+                    ("isPlotArrow" variable nil (reparse-symbol function_parameters) [7346 7357])
+                    ("kwargs" variable nil (reparse-symbol function_parameters) [7365 7373]))                  )
+                nil [7250 9497])
+            ("jobQmass" function (:arguments 
+              ( ("job" variable nil (reparse-symbol function_parameters) [9511 9514]))              ) nil [9498 10730])
+            ("job2sQmass" function nil nil [10731 10767])
+            ("job3sQmass" function nil nil [10768 10804])
+            ("job4sQmass" function nil nil [10805 10841])
+            ("job2sQesc_sfe" function (:arguments 
+              ( ("job" variable nil (reparse-symbol function_parameters) [10860 10863]))              ) nil [10842 11629])
+            ("job2s" function (:documentation " cumulative ef vs t ") nil [11683 13050])
+            ("job3s" function (:documentation " plot ef vs time for job3s ") nil [13051 14244])
+            ("job22Q" function nil nil [14245 14468])
+            ("jobskypngs" function (:arguments 
+              ( ("jobPath" variable nil (reparse-symbol function_parameters) [15649 15656])
+                ("is_colorbar" variable nil (reparse-symbol function_parameters) [15670 15681])
+                ("is_log" variable nil (reparse-symbol function_parameters) [15689 15695]))              ) nil [15634 17111])
+            ("jobsky222" function nil nil [17112 17455])
+            ("jobsky20" function nil nil [17460 17717])
+            ("jobsky23" function nil nil [17718 17940])
+            ("jobsky2dust" function nil nil [17941 18197])
+            ("jobsky4dust" function nil nil [18198 18469])
+            ("jobsky3" function nil nil [18470 18698])
+            ("jobsky3dust" function nil nil [18699 18974])
+            ("jobsky2_2" function nil nil [18975 19199])
+            ("jobsky3_2" function nil nil [19200 19424])
+            ("job22" function (:documentation " plot_ef_vs_t ") nil [19670 19802])
+            ("job222" function (:documentation " plot_ef_vs_t ") nil [19803 19874])
+            ("job301" function nil nil [19875 19941])
+            ("jobtest" function nil nil [19944 20162])
+            ("fun_Q" function
+               (:documentation " field = 'HI', 'HeI', or 'HeII'; flag = '2' or '3'
+
+    Parameters:
+    -----------
+    rescale: [bool], whether or not to rescale Q as in Sam's Fortran code
+    "
+                :arguments 
+                  ( ("field" variable nil (reparse-symbol function_parameters) [20175 20180])
+                    ("job" variable nil (reparse-symbol function_parameters) [20187 20190])
+                    ("rescale" variable nil (reparse-symbol function_parameters) [20196 20203])
+                    ("ax" variable nil (reparse-symbol function_parameters) [20211 20213])
+                    ("is_display_legend" variable nil (reparse-symbol function_parameters) [20230 20247])
+                    ("start_i" variable nil (reparse-symbol function_parameters) [20255 20262]))                  )
+                nil [20165 22150])
+            ("job23sQ" function nil nil [22151 22193]))          
+      :file "efMpiPlot.bk.py"
+      :pointmax 22439
+      :fsize 22438
+      :lastmodtime '(23613 7399 471760 885000)
+      :unmatched-syntax '((NAME 17205 . 17212) (IF 17218 . 17220) (ELSE 17232 . 17236) (NAME 16845 . 16852) (IF 16858 . 16860) (ELSE 16872 . 16876) (NAME 7741 . 7747) (IF 7776 . 7778) (ELSE 7787 . 7791)))
+    (semanticdb-table "semanticdb-table"
+      :major-mode python-mode
+      :tags 
+        '( ("\"\"\"
+
+@author: chongchonghe
+\"\"\"" code nil nil [47 77])
+            ("__future__" include nil nil [79 126])
+            ("mpl_toolkits.axes_grid1" include nil nil [146 194])
+            ("mpl_toolkits.axisartist" include nil nil [195 231])
+            ("efMpiPlot" include nil nil [232 255])
+            ("job222indi_bar" function nil nil [346 1054])
+            ("job222indi_cum" function nil nil [1056 1906])
+            ("job_make_ef_all" function nil nil [1908 2060])
+            ("add_tff_label" function (:arguments 
+              ( ("ax" variable nil (reparse-symbol function_parameters) [2317 2319]))              ) nil [2299 2501])
+            ("jobAll" function nil nil [2884 4603])
+            ("job4sQ" function nil nil [5133 5168])
+            ("job2sQ" function nil nil [5170 5205])
+            ("job3sQ" function nil nil [5246 5281])
+            ("job4sQHe" function nil nil [5332 5393])
+            ("jobHIall" function nil nil [5395 5474])
+            ("job11" function
+               (:documentation " xfields is 'gas' or '*' "
+                :arguments 
+                  ( ("xfield" variable nil (reparse-symbol function_parameters) [5486 5492])
+                    ("sharex" variable nil (reparse-symbol function_parameters) [5500 5506]))                  )
+                nil [5476 8786])
+            ("if" code nil nil [9088 9242]))          
+      :file "efMpi_jobs.py"
+      :pointmax 9264
+      :fsize 9263
+      :lastmodtime '(23613 8143 761124 232000)
+      :unmatched-syntax '((NAME 7216 . 7227) (IF 7235 . 7237) (ELSE 7245 . 7249)))
+    (semanticdb-table "semanticdb-table"
+      :major-mode python-mode
+      :tags 
+        '( ("efMpiPlot" include nil nil [27 50])
+            ("matplotlib.pyplot" include nil nil [51 82])
+            ("astropy.constants" include nil nil [83 112])
+            ("scipy" include nil nil [113 142])
+            ("math" include nil nil [143 165])
+            ("numpy" include nil nil [166 184])
+            ("ef_inte" function
+               (:documentation " x: log(tau), y: log(T) "
+                :arguments 
+                  ( ("x" variable nil (reparse-symbol function_parameters) [1569 1570])
+                    ("y" variable nil (reparse-symbol function_parameters) [1572 1573]))                  )
+                nil [1557 1683])
+            ("f, ax1" code nil nil [2023 2046])
+            ("logtauLim" variable nil nil [2047 2070])
+            ("tau" variable nil nil [2092 2126])
+            ("logtau" variable nil nil [2127 2149])
+            ("T" variable nil nil [2151 2159])
+            ("ef_inte_V" variable nil nil [2160 2193])
+            ("ax1" code nil nil [2194 2268])
+            ("ax1" code nil nil [2269 2332])
+            ("T" variable nil nil [2333 2342])
+            ("ax1" code nil nil [2343 2417])
+            ("ax1" code nil nil [2418 2481])
+            ("ax1" code nil nil [2647 2659])
+            ("plt" code nil nil [2661 2671]))          
+      :file "ef_interpolation.py"
+      :pointmax 2673
+      :fsize 2672
+      :lastmodtime '(23151 33871 897265 127000)
+      :unmatched-syntax nil)
+    (semanticdb-table "semanticdb-table"
+      :major-mode python-mode
+      :tags 
+        '( ("\"\"\"
+dynamics/dynamics.py
+
+Description: Main file for dynamics: make plots
+Compute the total energy of a particle system.
+Use C code calenergy.c to do heavy jobs
+
+Notice: This script may not work without all necessary data files.
+
+Author: ChongChong He
+\"\"\"" code nil nil [47 302])
+            ("utilities" include nil nil [304 327])
+            ("sys" code nil nil [328 355])
+            ("dynamics_tools" include nil nil [356 384])
+            ("gp_potential_mpi" include nil nil [385 427])
+            ("pe" include nil nil [428 445])
+            ("mpi_enclosed_gas" include nil nil [446 484])
+            ("plotutils" code nil nil [486 529])
+            ("get_kin" function
+               (:documentation " particles is a N by 7 array
+    Units: intrinsic (RAMSES units) "
+                :arguments 
+                  ( ("particles" variable nil (reparse-symbol function_parameters) [543 552]))                  )
+                nil [531 711])
+            ("par_kin" function
+               (:documentation " return the kinetic energy of 'particles' in data units
+    Units: intrinsic (RAMSES units) "
+                :arguments 
+                  ( ("particles" variable nil (reparse-symbol function_parameters) [724 733])
+                    ("com" variable nil (reparse-symbol function_parameters) [735 738]))                  )
+                nil [712 1173])
+            ("kin_of_com" function
+               (:documentation " Units: intrinsic (RAMSES units) "
+                :arguments 
+                  ( ("particles" variable nil (reparse-symbol function_parameters) [1381 1390]))                  )
+                nil [1366 1591])
+            ("Virial" type
+               (:superclasses ("RAMSES")
+                :members 
+                  ( ("plot_eff_radius" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [1749 1753])
+                            ("ax" variable nil (reparse-symbol function_parameters) [1755 1757])
+                            ("jobid" variable nil (reparse-symbol function_parameters) [1759 1764])
+                            ("kwargs" variable nil (reparse-symbol function_parameters) [1766 1774]))                          )
+                        (reparse-symbol indented_block_body) [1729 3113])
+                    ("run_eff_radius" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [3137 3141])
+                            ("fig_size_xy" variable nil (reparse-symbol function_parameters) [3143 3154]))                          )
+                        (reparse-symbol indented_block_body) [3118 3327])
+                    ("plot_sigma" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [3347 3351])
+                            ("ax" variable nil (reparse-symbol function_parameters) [3353 3355])
+                            ("jobid" variable nil (reparse-symbol function_parameters) [3357 3362])
+                            ("kwargs" variable nil (reparse-symbol function_parameters) [3364 3372]))                          )
+                        (reparse-symbol indented_block_body) [3332 4067])
+                    ("run_plot_sigma" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [4091 4095]))                          )
+                        (reparse-symbol indented_block_body) [4072 4278])
+                    ("plot_virial" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [4299 4303])
+                            ("ax" variable nil (reparse-symbol function_parameters) [4305 4307])
+                            ("jobid" variable nil (reparse-symbol function_parameters) [4309 4314]))                          
+                        :documentation " plot the virial ratios ")
+                        (reparse-symbol indented_block_body) [4283 8292])
+                    ("run_virial" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [8312 8316])
+                            ("figsize" variable nil (reparse-symbol function_parameters) [8318 8325]))                          )
+                        (reparse-symbol indented_block_body) [8297 8709])
+                    ("run_both" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [8727 8731]))                          )
+                        (reparse-symbol indented_block_body) [8714 9222]))                  
+                :type "class")
+                nil [1702 9222])
+            ("Clustering" type
+               (:superclasses ("RAMSES")
+                :members 
+                  ( ("get_star_pos_normed" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [9279 9283])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [9285 9293]))                          )
+                        (reparse-symbol indented_block_body) [9255 9416])
+                    ("plot_corr_curve" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [9441 9445])
+                            ("ax" variable nil (reparse-symbol function_parameters) [9447 9449])
+                            ("jobid" variable nil (reparse-symbol function_parameters) [9451 9456])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [9458 9466])
+                            ("compare" variable nil (reparse-symbol function_parameters) [9473 9480])
+                            ("kwargs" variable nil (reparse-symbol function_parameters) [9488 9496]))                          )
+                        (reparse-symbol indented_block_body) [9421 10108])
+                    ("plot_corr" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [10287 10291])
+                            ("ax" variable nil (reparse-symbol function_parameters) [10293 10295])
+                            ("jobid" variable nil (reparse-symbol function_parameters) [10297 10302])
+                            ("outputID" variable nil (reparse-symbol function_parameters) [10304 10312])
+                            ("compare" variable nil (reparse-symbol function_parameters) [10319 10326]))                          )
+                        (reparse-symbol indented_block_body) [10273 10763])
+                    ("more_lines" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [11066 11070])
+                            ("ax" variable nil (reparse-symbol function_parameters) [11072 11074])
+                            ("jobid" variable nil (reparse-symbol function_parameters) [11076 11081]))                          )
+                        (reparse-symbol indented_block_body) [11051 11211])
+                    ("plot_all_jobs" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [11789 11793])
+                            ("figsize" variable nil (reparse-symbol function_parameters) [11795 11802]))                          )
+                        (reparse-symbol indented_block_body) [11771 12263]))                  
+                :type "class")
+                nil [9224 12263])
+            ("Enclosed_mass" type
+               (:superclasses ("RAMSES")
+                :members 
+                  ( ("plot_enclosed_mass" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [12326 12330])
+                            ("ax" variable nil (reparse-symbol function_parameters) [12332 12334])
+                            ("jobid" variable nil (reparse-symbol function_parameters) [12336 12341])
+                            ("kwargs" variable nil (reparse-symbol function_parameters) [12343 12351]))                          )
+                        (reparse-symbol indented_block_body) [12303 13287])
+                    ("plot_all_jobs" function
+                       (:parent "dummy"
+                        :arguments 
+                          ( ("self" variable nil (reparse-symbol function_parameters) [13310 13314]))                          )
+                        (reparse-symbol indented_block_body) [13292 13817]))                  
+                :type "class")
+                nil [12269 13817])
+            ("run_virial" function nil nil [15268 15311])
+            ("run_cl" function nil nil [15312 15360])
+            ("run_en" function nil nil [15361 15412])
+            ("run_sigma" function nil nil [15413 15460])
+            ("if" code nil nil [15461 15922]))          
+      :file "dynamics.py"
+      :pointmax 16051
+      :fsize 16050
+      :lastmodtime '(23488 63674 495468 700000)
+      :unmatched-syntax nil)
+    (semanticdb-table "semanticdb-table"
+      :file "tools.py"
+      :fsize 2212
+      :lastmodtime '(23536 34726 412027 768000))
+    (semanticdb-table "semanticdb-table"
+      :file "gp_potential_mpi.py"
+      :fsize 3222
+      :lastmodtime '(23418 3727 319337 912000))
+    (semanticdb-table "semanticdb-table"
+      :file "mpi_enclosed_gas.py"
+      :fsize 2516
+      :lastmodtime '(23486 5275 472255 698000)))
+  :file "!Users!chongchonghe!Sam!work_pycharm!semantic.cache"
+  :semantic-tag-version "2.0"
+  :semanticdb-version "2.2")

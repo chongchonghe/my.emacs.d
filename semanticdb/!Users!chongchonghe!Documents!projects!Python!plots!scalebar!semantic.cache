@@ -1,0 +1,56 @@
+;; Object semanticdb-project-database-file
+;; SEMANTICDB Tags save file
+(semanticdb-project-database-file "semanticdb-project-database-file"
+  :tables
+  (list
+    (semanticdb-table "semanticdb-table"
+      :major-mode python-mode
+      :tags 
+        '( ("\"\"\"
+add_scalebar
+@author: chongchonghe
+\"\"\"" code nil nil [47 89])
+            ("add_scalebar" function
+               (:documentation " Add a scalebar to a figure
+    Author: ChongChong He
+
+    Parameters
+    ----------
+    ax: matplotlib axes
+        The axes passed to add_scalebar
+    length: double
+        The length of the scalebar in code units
+    label: string
+        The scalebar label
+    h: double
+        The height of the scalebar relative to figure height
+    color: string
+        color
+    **kwargs: dict
+        kwargs passed to ax.text
+
+    Examples
+    --------
+    >>> im = plt.imread(\"/Users/chongchonghe/Pictures/bj.jpg\")[:800, :800, :]
+    >>> plt.imshow(im)
+    >>> ax = plt.gca()
+    >>> add_scalebar(ax, 200, '3 pc')
+    >>> plt.show()
+
+    "
+                :arguments 
+                  ( ("ax" variable nil (reparse-symbol function_parameters) [108 110])
+                    ("length" variable nil (reparse-symbol function_parameters) [112 118])
+                    ("label" variable nil (reparse-symbol function_parameters) [120 125])
+                    ("h" variable nil (reparse-symbol function_parameters) [127 128])
+                    ("color" variable nil (reparse-symbol function_parameters) [136 141])
+                    ("kwargs" variable nil (reparse-symbol function_parameters) [147 155]))                  )
+                nil [91 1372]))          
+      :file "my_scalebar.py"
+      :pointmax 1372
+      :fsize 1371
+      :lastmodtime '(23531 22764 607976 725000)
+      :unmatched-syntax nil))
+  :file "!Users!chongchonghe!Documents!projects!Python!plots!scalebar!semantic.cache"
+  :semantic-tag-version "2.0"
+  :semanticdb-version "2.2")
