@@ -4,7 +4,7 @@
 ;;; -*- End Of Bookmark File Format Version Stamp -*-
 (("org-capture-last-stored"
  (filename . "~/Dropbox/notes/work.org")
- (front-context-string . "** TODO haha\n   ")
- (rear-context-string . " notes\n\n* Tasks\n")
- (position . 65))
+ (front-context-string . "** TODO haha\nhah")
+ (rear-context-string . " defense prep]]\n")
+ (position . 188))
 )

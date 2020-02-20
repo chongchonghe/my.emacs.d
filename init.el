@@ -541,9 +541,9 @@ applying this config. "
   (setq mail-user-agent 'mu4e-user-agent)
   (setq mu4e-maildir (expand-file-name "~/mbsync2/umdastro"))
   (setq mu4e-get-mail-command "mbsync -a")
-					; mu4e requires to specify drafts, sent, and trash dirs a smarter
-					; configuration allows to select directories according to the account
-					; (see mu4e page)
+  ;; mu4e requires to specify drafts, sent, and trash dirs a smarter
+  ;; configuration allows to select directories according to the
+  ;; account (see mu4e page)
   (setq mu4e-sent-folder    "/Sent Messages")
   (setq mu4e-drafts-folder  "/Drafts")
   (setq mu4e-trash-folder   "/Trash")
@@ -585,8 +585,7 @@ applying this config. "
   ;; show images
   (setq mu4e-view-show-images t)
   ;; use imagemagick, if available
-  (when (fboundp 'imagemagick-register-types)
-    (imagemagick-register-types))
+  (when (fboundp 'imagemagick-register-types) (imagemagick-register-types))
   ;; from: http://cachestocaches.com/2017/3/complete-guide-email-emacs-using-mu-and-/#getting-set-up-with-mu-and-offlineimap
   (setq sendmail-program "/usr/local/bin/msmtp"
 	send-mail-function 'smtpmail-send-it
@@ -629,7 +628,7 @@ applying this config. "
 	      (flyspell-mode)))
   ;; don't keep message buffers around
   (setq message-kill-buffer-on-exit t)
-  ;; from: https://emacs.stackexchange.com/questions/21723/how-can-i-delete-mu4e-drafts-on-successfully-sending-the-mail
+  ;; Ref: https://emacs.stackexchange.com/questions/21723/how-can-i-delete-mu4e-drafts-on-successfully-sending-the-mail
   (defun draft-auto-save-buffer-name-handler (operation &rest args)
     "for `make-auto-save-file-name' set '.' in front of the file name; do nothing for other operations"
     (if
@@ -662,7 +661,7 @@ applying this config. "
 	'( (:human-date    . 12)    ;; alternatively, use :human-date
 	   (:flags         . 6)
 	   (:from-or-to    . 25)
-	   ;; (:cc            . 25)
+	   (:cc            . 25)
 	   (:subject       . nil))) ;; alternatively, use :thread-subject
   ;;
   (setq message-citation-line-function 'message-insert-formatted-citation-line)
@@ -688,8 +687,9 @@ applying this config. "
   ;;   ;; (setq mu4e-alert-email-notification-types '(subjects))
   ;;   (setq mu4e-alert-email-notification-types '(count))
   ;;   )
+  ;; ;; Uncomment the following line and the defun above to enable notification
   ;; (enable-mu4e-notification)
-  ;; signatures.
+  ;; ;; signatures.
   ;; Ref: https://www.macs.hw.ac.uk/~rs46/posts/2014-11-16-mu4e-signatures.html
   ;; (setq mu4e-compose-signature
   ;;    "ChongChong He\n")
