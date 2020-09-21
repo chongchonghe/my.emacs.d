@@ -10,6 +10,9 @@
 
 * About
 
+**I have switched to [[https://github.com/syl20bnr/spacemacs][Spacemacs]] and will gradually move everything in this
+configuration file into .spacemacs.d**
+
 This is my Emacs configuration file written in Org mode. It is an
 attempt to keep my =~/.emacs.d/init.el= file organized and readable,
 as Emacs configuration could be a life-long practice.
@@ -1539,7 +1542,7 @@ todo item in the agenda. Use =%a= for annotation.
 *** Todo and Priority
 
 To set the priority of the current headline, do ~C-c ,~, or
-~S-UP~ / ~S_DOWN~. 
+~S-UP~ / ~S_DOWN~.
 
 #+BEGIN_SRC emacs-lisp
   (setq org-default-priority ?A)
@@ -1729,7 +1732,7 @@ Ref: https://emacs-helm.github.io/helm/
     (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
     (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
     (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
-  
+
     )
 #+END_SRC
 
