@@ -3,10 +3,26 @@
 
 (setq url-cookie-storage
  '((".stackoverflow.com"
-  [url-cookie "prov" "236c58be-b612-2aad-5d80-959a87ac87ba" "Fri, 01-Jan-2055 00:00:00 GMT" "/" ".stackoverflow.com" nil]))
+  [url-cookie "prov" "236c58be-b612-2aad-5d80-959a87ac87ba" "Fri, 01-Jan-2055 00:00:00 GMT" "/" ".stackoverflow.com" nil])
+ ("validate.perfdrive.com"
+  [url-cookie "__uzmd" "1585016002" "Sun Sep 20 02:13:22 2020 GMT" "/" "validate.perfdrive.com" nil]
+  [url-cookie "__uzmc" "823951030917" "Sun Sep 20 02:13:22 2020 GMT" "/" "validate.perfdrive.com" nil]
+  [url-cookie "__uzmb" "1585016002" "Sun Sep 20 02:13:22 2020 GMT" "/" "validate.perfdrive.com" nil]
+  [url-cookie "__uzma" "2ba75ef8-8009-4d84-9d3d-0004b419870f" "Sun Sep 20 02:13:22 2020 GMT" "/" "validate.perfdrive.com" nil])
+ ("iopscience.iop.org"
+  [url-cookie "__uzmd" "1585016002" "Tue, 22-Sep-20 02:13:22 GMT" "/" "iopscience.iop.org" nil]
+  [url-cookie "__uzmc" "365321070706" "Tue, 22-Sep-20 02:13:22 GMT" "/" "iopscience.iop.org" nil]
+  [url-cookie "__uzmb" "1585016002" "Tue, 22-Sep-20 02:13:22 GMT" "/" "iopscience.iop.org" nil]
+  [url-cookie "__uzma" "2ba75ef8-8009-4d84-9d3d-0004b419870f" "Tue, 22-Sep-20 02:13:22 GMT" "/" "iopscience.iop.org" nil]))
 )
 (setq url-cookie-secure-storage
- 'nil)
+ '(("wikimedia.org"
+  [url-cookie "WMF-Last-Access" "09-Aug-2020" "Thu, 10 Sep 2020 12:00:00 GMT" "/" "wikimedia.org" t])
+ (".wikimedia.org"
+  [url-cookie "WMF-Last-Access-Global" "09-Aug-2020" "Thu, 10 Sep 2020 12:00:00 GMT" "/" ".wikimedia.org" t])
+ (".academic.oup.com"
+  [url-cookie "Oxford_AcademicMachineID" "637206125907653388" "Sun, 24-Mar-2030 02:09:50 GMT" "/" ".academic.oup.com" t]))
+)
 
 ;; Local Variables:
 ;; version-control: never

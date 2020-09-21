@@ -1,6 +1,31 @@
-;; -*- emacs-lisp -*- <20/02/14 18:44:27 /Users/chongchonghe/.emacs.d/tramp>
+;; -*- emacs-lisp -*- <20/08/11 14:08:52 /Users/chongchonghe/.emacs.d/tramp>
 ;; Tramp connection history.  Don't change this file.
 ;; You can delete it, forcing Tramp to reapply the checks.
 
-(((tramp-file-name "ssh" nil nil "dp2" nil nil nil)
+(((tramp-file-name "ssh" nil nil "st" nil nil nil)
+  ("uname" "Linux 3.10.0-1127.13.1.el7.x86_64")
+  ("locale" "LC_ALL=en_US.utf8")
+  ("test" "test")
+  ("remote-path"
+   ("/usr/bin" "/bin" "/sbin" "/usr/sbin" "/usr/local/bin" "/usr/local/sbin" "/local/bin"))
+  ("remote-shell" "/bin/sh")
+  ("~" "/home/chongchong")
+  ("perl-file-spec" t)
+  ("perl-cwd-realpath" t)
+  ("perl" "\\perl")
+  ("file-exists" "test -e")
+  ("case-insensitive" nil)
+  ("ls" "/usr/bin/ls --color=never")
+  ("ls-quoting-style" t)
+  ("ls-dired" t)
+  ("stat" "env QUOTING_STYLE=locale \\stat")
+  ("id" "/usr/bin/id")
+  ("gid-integer" 501)
+  ("readlink" "\\readlink")
+  ("gid-string" "graduate")
+  ("git" "\\git")
+  ("uid-integer" 6012)
+  ("env-u-option" t)
+  ("hg" "\\hg"))
+ ((tramp-file-name "ssh" nil nil "ChongChongs-MacBook-Pro-6.local" nil nil nil)
   nil))

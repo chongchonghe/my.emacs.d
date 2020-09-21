@@ -1,12 +1,3 @@
-;; -*- mode: emacs-lisp -*-
-
-;;(setq use-spacemacs t)   ; or nil
-;;
-;;(when use-spacemacs
-;;  (setq user-emacs-directory "~/.spacemacs.d/"))   ; defaults to ~/.emacs.d/
-;;
-;;(load (expand-file-name "init.el" user-emacs-directory))
-
 (require 'package)
 (setq package-archives
       '(("melpa" . "https://melpa.org/packages/")
@@ -17,7 +8,7 @@
 (add-to-list 'package-archives
              '("MELPA Stable" . "https://stable.melpa.org/packages/") t)
 (add-to-list 'package-archives
-       '("elpy" . "http://jorgenschaefer.github.io/packages/"))
+             '("elpy" . "http://jorgenschaefer.github.io/packages/"))
 
 (add-to-list 'load-path "~/.emacs.d/pkgs")
 
@@ -44,124 +35,478 @@
   (add-to-list 'load-path "../.emacs.d/elpa")
   (require 'use-package))
 
-;;;; All my organized configurations
-(defun my-general-config ()
-  "General setup, just copy and paste"
-  (setq inhibit-startup-message t) ;; hide the startup message
-  ;; remove backup files (e.g. README.md~)
-  (setq make-backup-files nil)
-  ;; prevent pop-up window "Async Shell Command" when doing pdf->tex sync
-  ;; (setq pop-up-windows nil)
-  ;; (call-process-shell-command "okular&" nil 0)
-  (add-to-list 'display-buffer-alist
-	       (cons "\\*Async Shell Command\\*.*" (cons #'display-buffer-no-window nil)))
-  (global-linum-mode t) ;; enable line numbers globally
-  ;; Use cmd key for meta
-  ;; https://superuser.com/questions/297259/set-emacs-meta-key-to-be-the-mac-key
-  (setq mac-option-key-is-meta nil
-	mac-command-key-is-meta t
-	mac-command-modifier 'meta
-	mac-option-modifier 'none)
-  ;; (global-linum-mode t) ;; enable line numbers globally
-  ;; (add-hook 'prog-mode-hook 'column-number-mode)
-  ;; (add-hook 'prog-mode-hook 'linum-mode) ;; enable (line number, col number)
-  (windmove-default-keybindings)          ;; e.g. Shift-arrow to swith windows
-  (global-set-key (kbd "C-x p") (kbd "C-- C-x o")) ;; make swithing windows easier
-  (global-set-key (kbd "C-x n") (kbd "C-x o"))
-  (global-set-key (kbd "M-p") (kbd "C-- C-x o"))
-  (global-set-key (kbd "M-n") (kbd "C-x o"))
-  (global-set-key (kbd "M-j") 'windmove-down)
-  (global-set-key (kbd "M-k") 'windmove-up)
-  (global-set-key (kbd "M-h") 'windmove-left)
-  (global-set-key (kbd "M-l") 'windmove-right)
-  ;; (global-unset-key (kbd "C-x C-c"))
-  ;; (global-unset-key (kbd "M-v"))
-  (global-set-key (kbd "M-v") 'evil-paste-after)
-  ;; Auto fill mode
-  (setq default-fill-column 80)
-  (add-hook 'text-mode-hook 'turn-on-auto-fill)
-  ;; Turn off auto-fill-mode in markdown
-  (defun my-markdown-mode-hook ()
-    (auto-fill-mode 0))                   ; turn off auto-filling
-  (add-hook 'markdown-mode-hook 'my-markdown-mode-hook)
-  ;;(popwin-mode 1)
-  ;; Method two: use emacs default
-  (setq-default
-   ;; Column Marker at 80
-   whitespace-line-column 80
-   whitespace-style       '(face lines-tail))
-  (add-hook 'prog-mode-hook #'whitespace-mode)
-  ;; dumb-jump
-  (dumb-jump-mode)
-  (global-set-key (kbd "C-M-o") 'dumb-jump-go)
-  ;; Auto revert mode
-  (global-auto-revert-mode 1)
-  ;; kill/copy whole line
-  (defun slick-cut (beg end)
-    (interactive
-     (if mark-active
-	 (list (region-beginning) (region-end))
-       (list (line-beginning-position) (line-beginning-position 2)))))
-  (advice-add 'kill-region :before #'slick-cut)
-  (defun slick-copy (beg end)
-    (interactive
-     (if mark-active
-	 (list (region-beginning) (region-end))
-       (message "Copied line")
-       (list (line-beginning-position) (line-beginning-position 2)))))
-  (advice-add 'kill-ring-save :before #'slick-copy)
-  ;; Indentation
-  ;;(setq-default indent-tabs-mode nil)
-  (setq tab-width 4)
-  (global-set-key (kbd "C-c c") 'compile)
-  (global-set-key (kbd "C-c m") 'recompile)
-  ;; (require 'insert-time)
-  ;; (define-key global-map [(control c)(d)] 'insert-date-time)
-  ;; (define-key global-map [(control c)(control v)(d)] 'insert-personal-time-stamp)
-  ;; Ref: https://stackoverflow.com/questions/384284/how-do-i-rename-an-open-file-in-emacs
-  ;; source: http://steve.yegge.googlepages.com/my-dot-emacs-file
-  (defun rename-file-and-buffer (new-name)
-    "Renames both current buffer and file it's visiting to NEW-NAME."
-    (interactive "sNew name: ")
-    (let ((name (buffer-name))
-	  (filename (buffer-file-name)))
-      (if (not filename)
-	  (message "Buffer '%s' is not visiting a file!" name)
-	(if (get-buffer new-name)
-	    (message "A buffer named '%s' already exists!" new-name)
-	  (progn
-	    (rename-file filename new-name 1)
-	    (rename-buffer new-name)
-	    (set-visited-file-name new-name)
-	    (set-buffer-modified-p nil))))))
-  )
+;; "General setup, just copy and paste"
 
-(defun my-yasnippet-config ()
-  (require 'yasnippet)
-  (setq yas-triggers-in-field t)
-;;; https://superuser.com/questions/1006188/can-emacs-be-set-up-to-display-python-code-in-python-mode-and-display-docstrings
-					;(add-to-list 'load-path "~/.emacs.d/python-docstring-mode")
-					;(require 'python-docstring)
-					;(add-hook 'python-mode-hook (lambda () (python-docstring-mode t)))
-  (yas/initialize)
-  (yas/load-directory "~/.emacs.d/snippets")
-  (yas-minor-mode 1)
-  ;; (defun my/autoinsert-yas-expand()
-  ;;   "Replace text in yasnippet template."
-  ;;   (yas/expand-snippet (buffer-string) (point-min) (point-max)))
+(setq inhibit-startup-message t) ;; hide the startup message
+;; remove backup files (e.g. README.md~)
+(setq make-backup-files nil)
+;; prevent pop-up window "Async Shell Command" when doing pdf->tex sync
+;; (setq pop-up-windows nil)
+;; (call-process-shell-command "okular&" nil 0)
+(add-to-list 'display-buffer-alist
+             (cons "\\*Async Shell Command\\*.*" (cons #'display-buffer-no-window nil)))
+(global-linum-mode t) ;; enable line numbers globally
+;; Use cmd key for meta
+;; https://superuser.com/questions/297259/set-emacs-meta-key-to-be-the-mac-key
+(setq mac-option-key-is-meta nil
+      mac-command-key-is-meta t
+      mac-command-modifier 'meta
+      mac-option-modifier 'none)
+;; (global-linum-mode t) ;; enable line numbers globally
+;; (add-hook 'prog-mode-hook 'column-number-mode)
+;; (add-hook 'prog-mode-hook 'linum-mode) ;; enable (line number, col number)
+(windmove-default-keybindings)          ;; e.g. Shift-arrow to swith windows
+;; make swithing windows easier
+;; (global-set-key (kbd "C-x p") (kbd "C-- C-x o"))
+;; (global-set-key (kbd "C-x n") (kbd "C-x o"))
+(global-set-key (kbd "M-p") (kbd "C-- C-x o"))
+(global-set-key (kbd "M-n") (kbd "C-x o"))
+(global-set-key (kbd "M-j") 'windmove-down)
+(global-set-key (kbd "M-k") 'windmove-up)
+(global-set-key (kbd "M-h") 'windmove-left)
+(global-set-key (kbd "M-l") 'windmove-right)
+;; (global-unset-key (kbd "C-x C-c"))
+;; (global-unset-key (kbd "M-v"))
+(global-set-key (kbd "M-v") 'evil-paste-after)
+;; Auto fill mode
+(setq default-fill-column 80)
+;; (add-hook 'text-mode-hook 'turn-on-auto-fill)
+;; Turn off auto-fill-mode in markdown
+(defun my-markdown-mode-hook ()
+  (auto-fill-mode 0))                   ; turn off auto-filling
+(add-hook 'markdown-mode-hook 'my-markdown-mode-hook)
+;;(popwin-mode 1)
+;; Method two: use emacs default
+(setq-default
+ ;; Column Marker at 80
+ whitespace-line-column 80
+ whitespace-style       '(face lines-tail))
+(add-hook 'prog-mode-hook #'whitespace-mode)
+;; dumb-jump
+(dumb-jump-mode)
+(global-set-key (kbd "C-M-o") 'dumb-jump-go)
+;; Auto revert mode
+(global-auto-revert-mode 1)
+;; kill/copy whole line
+(defun slick-cut (beg end)
+  (interactive
+   (if mark-active
+       (list (region-beginning) (region-end))
+     (list (line-beginning-position) (line-beginning-position 2)))))
+(advice-add 'kill-region :before #'slick-cut)
+(defun slick-copy (beg end)
+  (interactive
+   (if mark-active
+       (list (region-beginning) (region-end))
+     (message "Copied line")
+     (list (line-beginning-position) (line-beginning-position 2)))))
+(advice-add 'kill-ring-save :before #'slick-copy)
+;; Indentation
+;;(setq-default indent-tabs-mode nil)
+(setq tab-width 4)
+;; (global-set-key (kbd "C-c c") 'compile)
+(global-set-key (kbd "C-c r") 'compile)
+(global-set-key (kbd "C-c m") 'recompile)
+;; (require 'insert-time)
+;; (define-key global-map [(control c)(d)] 'insert-date-time)
+;; (define-key global-map [(control c)(control v)(d)] 'insert-personal-time-stamp)
+;; Ref: https://stackoverflow.com/questions/384284/how-do-i-rename-an-open-file-in-emacs
+;; source: http://steve.yegge.googlepages.com/my-dot-emacs-file
+(defun rename-file-and-buffer (new-name)
+  "Renames both current buffer and file it's visiting to NEW-NAME."
+  (interactive "sNew name: ")
+  (let ((name (buffer-name))
+        (filename (buffer-file-name)))
+    (if (not filename)
+        (message "Buffer '%s' is not visiting a file!" name)
+      (if (get-buffer new-name)
+          (message "A buffer named '%s' already exists!" new-name)
+        (progn
+          (rename-file filename new-name 1)
+          (rename-buffer new-name)
+          (set-visited-file-name new-name)
+          (set-buffer-modified-p nil))))))
+;; https://emacsredux.com/blog/2013/05/18/instant-access-to-init-dot-el/
+(defun er-find-user-init-file ()
+  "Edit the `user-init-file', in another window."
+  (interactive)
+  ;; (find-file-other-window user-init-file)
+  (find-file user-init-file)
   )
+(global-set-key (kbd "C-c i") (lambda() (interactive)(find-file "~/.emacs.d/init.org")))
 
-(defun my-neotree-config ()
-  "Use M-x package-list-packages to install neotree before
-applying this config. "
-  (defun my-neotree-mode-config ()
-    "For use in 'neotree-mode-hook'."
-    (local-set-key (kbd "j") 'neotree-next-line)
-    (local-set-key (kbd "k") 'neotree-previous-line)
-    (local-set-key (kbd "C-j") 'neotree-window-down)
-    (local-set-key (kbd "C-k") 'neotree-window-up)
-    )
-  (add-hook 'neotree-mode-hook 'my-neotree-mode-config)
+;; set encoding
+(set-language-environment "UTF-8")
+(set-default-coding-systems 'utf-8)
+(set-buffer-file-coding-system 'utf-8-unix)
+(set-clipboard-coding-system 'utf-8-unix)
+(set-file-name-coding-system 'utf-8-unix)
+(set-keyboard-coding-system 'utf-8-unix)
+(set-next-selection-coding-system 'utf-8-unix)
+(set-selection-coding-system 'utf-8-unix)
+(set-terminal-coding-system 'utf-8-unix)
+(setq locale-coding-system 'utf-8)
+(prefer-coding-system 'utf-8)
+
+(when (eq system-type 'darwin)
+  (add-to-list
+   'load-path "/usr/local/Cellar/mu/1.2.0_1/share/emacs/site-lisp/mu/mu4e"))
+
+;; (load-file "~/.my-elips/mail.el")
+
+;; Emacs specific (not on Spacemacs)
+;; (global-set-key (kbd "mu") (kbd "mu4e"))
+
+(mu4e-maildirs-extension)
+
+(require 'mu4e)      ;; read messages
+(require 'smtpmail)  ;; send messages
+
+(global-set-key (kbd "C-c e") 'mu4e)
+
+;; spell check and org-mu4e
+(add-hook 'mu4e-compose-mode-hook
+          (defun my-do-compose-stuff ()
+            "My settings for message composition."
+            (set-fill-column 72)
+            (flyspell-mode)
+            ;; (org-mu4e-compose-org-mode)
+            ))
+
+(setq mail-user-agent 'mu4e-user-agent ;; use mu4e for e-mail in emacs
+      ;; for mbsync, when move a message to All Mail as archiving
+      mu4e-change-filenames-when-moving t
+      mu4e-view-show-addresses t
+      mu4e-maildir "~/Maildir"
+      mu4e-get-mail-command "mbsync umd"
+      mu4e-attachment-dir "~/Documents/MailAttachments"
+      )
+
+;; TODO: try this out
+;; (setq mu4e-context-policy 'pick-first)
+;; (setq mu4e-compose-context-policy 'always-ask)
+
+;; ;; Not needed because spacemacs has this as default
+;; ;; Bookmarks
+;; (setq mu4e-bookmarks
+;;       `(
+;;         ("flag:unread AND NOT flag:trashed" "Unread messages" ?u)
+;;         ("flag:unread" "new messages" ?n)
+;;         ("date:today..now" "Today's messages" ?t)
+;;         ("date:7d..now" "Last 7 days" ?w)
+;;         ("mime:image/*" "Messages with images" ?p)
+;;         ))
+
+(setq mu4e-update-interval 60)
+(setq mu4e-search-result-limit 400)
+(setq mu4e-headers-results-limit 500)
+;; (define-key mu4e-headers-mode-map (kbd "d") nil)
+
+;; tell mu4e to use w3m for html rendering.
+;; (setq mu4e-html2text-command "w3m -T text/html")
+(setq mu4e-html2text-command "w3m -dump -T text/html -o display_link_number=true")
+
+;; Alert
+;; (setq mu4e-alert-interesting-mail-query "flag:unread AND maildir:/INBOX")
+
+;; view message in browser by typing 'aV'
+(add-to-list 'mu4e-view-actions
+             '("ViewInBrowser" . mu4e-action-view-in-browser) t)
+
+(setq mu4e-hide-index-messages t) ;; Silence index messages
+
+;; show images
+(setq mu4e-view-show-images t)
+;; use imagemagick, if available
+(when (fboundp 'imagemagick-register-types)
+  (imagemagick-register-types))
+
+;; TODO: try this out
+;; Load the org-mu4e package
+;; (load "org-mu4e")
+;; (setq org-mu4e-convert-to-html t)
+;; (use-package org-mime
+;;   :ensure t)
+
+;; https://emacs.stackexchange.com/questions/52487/mu4e-how-to-stop-the-unarchiving-of-entire-threads-when-new-message-arrives
+;; TODO: uncomment if necessary
+;; (setq mu4e-headers-include-related nil)
+
+;; ;; sending emails
+;; (setq user-mail-address "chongchong@astro.umd.edu"
+;;       user-full-name  "ChongChong He"
+;;       smtpmail-default-smtp-server "gaia.astro.umd.edu"
+;;       ;; smtpmail-local-domain "account1.example.com"
+;;       smtpmail-smtp-server "gaia.astro.umd.edu"
+;;       ;; smtpmail-stream-type 'starttls
+;;       ;; smtpmail-smtp-service 587
+;;       smtpmail-debug-info t)
+;; from: http://cachestocaches.com/2017/3/complete-guide-email-emacs-using-mu-and-/#getting-set-up-with-mu-and-offlineimap
+;; (setq sendmail-program "/usr/local/bin/msmtp"
+;;       send-mail-function 'smtpmail-send-it
+;;       message-sendmail-f-is-evil t
+;;       message-sendmail-extra-arguments '("--read-envelope-from")
+;;       message-send-mail-function 'message-send-mail-with-sendmail)
+
+;; (setq mu4e-compose-signature
+;;    "ChongChong He\n")
+(defun my-mu4e-choose-signature ()
+  "Insert one of a number of sigs"
+  (interactive)
+  (let ((message-signature
+         (mu4e-read-option "Signature:"
+                           '(("formal" .
+                              (concat
+                               "Chong-Chong He\n"
+                               "PhD Student, Department of Astronomy\n"
+                               "University of Maryland, College Park\n"
+                               "E: che1234@umd.edu\n"
+                               "W: https://chongchonghe.github.io/"))
+                             ("informal" .
+                              (concat
+                               "Best,\n"
+                               "ChongChong\n")
+                              )
+                             ))))
+    (message-insert-signature)))
+(add-hook 'mu4e-compose-mode-hook
+          (lambda () (local-set-key (kbd "C-c C-w s") #'my-mu4e-choose-signature)))
+
+;; use 'fancy' non-ascii characters in various places in mu4e
+(setq mu4e-use-fancy-chars t)
+
+;; automatically cc myself
+;; (setq mu4e-compose-dont-reply-to-self nil) ;; trying because the above doesn't work
+(setq mu4e-compose-keep-self-cc t)
+
+;; TODO: Uncomment if necessary
+;; (setq mu4e-compose-dont-reply-to-self nil) ; ?
+
+;; (add-to-list 'file-name-handler-alist '("Drafts/cur/" . draft-auto-save-buffer-name-handler))
+
+;; TODO: Uncomment if necessary. Don't know how the default looks in spacemacs
+;; the headers to show in the headers list -- a pair of a field
+;; and its width, with `nil' meaning 'unlimited'
+;; (setq mu4e-headers-fields
+;;       '(
+;; 	(:human-date    . 14)    ;; alternatively, use :human-date
+;; 	(:flags         . 8)
+;; 	(:from-or-to    . 30)
+;; 	(:subject       . nil)
+;; 	)) ;; alternatively, use :thread-subject
+;; (setq mu4e-split-view 'vertical)
+(setq mu4e-headers-fields
+      '(
+        (:human-date    . 14)    ;; alternatively, use :human-date
+        (:flags         . 6)
+        (:from-or-to    . 26)
+        (:subject       . 34)
+        )) ;; alternatively, use :thread-subject
+;; (setq mu4e-split-view 'horizontal)  ; default is horizontal
+;; (setq mu4e-headers-visible-columns 82)
+(setq mu4e-headers-visible-lines 20)
+(add-hook 'mu4e-headers-hook (lambda () (linum-mode 0)))
+
+(setq message-citation-line-function 'message-insert-formatted-citation-line)
+(setq message-citation-line-format "On %a, %b %d %Y at %R, %f wrote:\n")
+
+;; Configs from https://www.reddit.com/r/spacemacs/comments/c8omik/spacemacs_mu4e_emacsw3m_awesome/ that I don't understand
+(setq mu4e-headers-skip-duplicates t)
+(setq mu4e-display-update-status-in-modeline t)
+(setq mu4e-compose-format-flowed t)
+(setq mu4e-compose-complete-only-personal t)
+;;
+(add-hook 'LaTeX-mode-hook #'visual-line-mode)
+;;
+(electric-pair-mode)
+(add-hook 'LaTeX-mode-hook
+          '(lambda ()
+             (define-key LaTeX-mode-map (kbd "$") 'self-insert-command)
+             ))
+
+;; (setq mu4e-compose-mode-hook
+;;       (lambda ()
+;;         ;; (use-hard-newlines -1)
+;;         (auto-fill-mode)
+;;         ;; (visual-line-mode)
+;;         ))
+
+(add-to-list 'mu4e-view-actions '("ViewInBrowser" . mu4e-action-view-in-browser) t)
+
+;; Disable auto-save-mode on compose:
+(setq mu4e-sent-messages-behavior 'delete)
+(add-hook 'mu4e-compose-mode-hook #'(lambda () (auto-save-mode -1)))
+
+(add-hook 'mu4e-compose-mode-hook
+          (defun my-add-bcc ()
+            "Add a cc: header."
+            (save-excursion (message-add-header "Cc: che1234@umd.edu\n"))))
+
+;; ;; from https://www.djcbsoftware.nl/code/mu/mu4e/Compose-hooks.html
+;; (add-hook 'mu4e-compose-mode-hook
+;;           (lambda()
+;;             (let* ((ctx (mu4e-context-current))
+;;                    (name (if ctx (mu4e-context-name ctx))))
+;;               (when name
+;;                 (cond
+;;                  ((string= name "astro")
+;;                   (save-excursion (message-add-header "Cc: chongchong@astro.umd.edu\n")))
+;;                  ((string= name "terpmail")
+;;                   (save-excursion (message-add-header "Cc: che1234@terpmail.umd.edu\n")))
+;;                  ((string= name "umd")
+;;                   (save-excursion (message-add-header "Cc: che1234@umd.edu\n")))
+;; 		 )))))
+
+(require 'org-mime)
+
+;; https://www.djcbsoftware.nl/code/mu/mu4e/Writing-messages.html
+(setq mu4e-compose-format-flowed t)
+(add-hook 'mu4e-compose-mode-hook #'(lambda () (auto-fill-mode -1)))
+
+;; (defun org-mime-org-buffer-htmlize ()
+;;   "Create an email buffer containing the current org-mode file
+;;   exported to html and encoded in both html and in org formats as
+;;   mime alternatives."
+;;   (interactive)
+;;   (org-mime-send-buffer 'html)
+;;   (message-goto-to))
+
+;; (defun htmlize-and-send ()
+;;   "When in an org-mu4e-compose-org-mode message, htmlize and send it."
+;;   (interactive)
+;;   (when (member 'org~mu4e-mime-switch-headers-or-body post-command-hook)
+;;     (org-mime-htmlize)
+;;     (message-send-and-exit)))
+
+;; (add-hook 'org-ctrl-c-ctrl-c-hook 'htmlize-and-send t)
+
+;; (add-hook 'mu4e-compose-mode-hook
+;;           (defun do-compose-stuff ()
+;;             "My settings for message composition."
+;;             (org-mu4e-compose-org-mode)))
+
+;; don't keep message buffers around
+(setq message-kill-buffer-on-exit t)
+
+(setq smtpmail-debug-info t)
+
+(setq
+ sendmail-program "/usr/local/bin/msmtp"
+ message-sendmail-f-is-evil t
+ message-sendmail-extra-arguments '("--read-envelope-from")
+ ;; send-mail-function 'smtpmail-send-it
+ ;; message-send-mail-function 'message-send-mail-with-sendmail
+ message-send-mail-function 'smtpmail-send-it
+ user-full-name "ChongChong He"
+ user-mail-address "che1234@umd.edu"
+ smtpmail-smtp-user "che1234@umd.edu"
+ smtpmail-default-smtp-server "smtp.gmail.com"
+ smtpmail-smtp-server "smtp.gmail.com"
+ smtpmail-smtp-service 587
+ ;; smtpmail-stream-type 'starttls
+ starttls-use-gnutls t
+ smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
+ ;; smtpmail-auth-credentials (expand-file-name "~/.authinfo.gpg")
+ smtpmail-debug-info t
+ mu4e-compose-keep-self-cc t
+ ;; smtpmail-auth-credentials '(("smtp.gmail.com" 587 "che1234@umd.edu" nil))
+ ;; testing: removing all the folder def since I don't need
+ ;; it. Later will set folder shortcuts
+ mu4e-trash-folder "/umd/trash"
+ mu4e-sent-folder "/umd/[Gmail].All Mail"
+ mu4e-refile-folder "/umd/[Gmail].All Mail"
+ mu4e-drafts-folder "/umd/[Gmail].Drafts"
+; don't save message to Sent Messages, IMAP takes care of this
+ mu4e-maildir-shortcuts '( ("/umd/INBOX"               . ?i)
+                           ("/umd/[Gmail].Sent Mail"   . ?s)
+                           ;; only trash is named differently
+                           ("/umd/trash"               . ?t)
+                           ("/umd/[Gmail].Drafts"      . ?d)
+                           ("/umd/[Gmail].Starred"     . ?*)
+                           ("/umd/[Gmail].All Mail"    . ?a)
+                           ("/umd/f.Reference"         . ?r)
+                           ("/umd/f.Archive"           . ?x)
+                         )
+ )
+
+(setq mu4e-compose-complete-only-personal nil)
+
+(add-to-list 'load-path "~/.emacs.d/evil")
+;; This should give you org-mode Tab functionality back. Ref:
+;; https://stackoverflow.com/questions/22878668/emacs-org-mode-evil-mode-tab-key-not-working
+;; (setq evil-want-C-i-jump nil)
+(require 'evil)
+(evil-mode 1)
+;; Use neotree with evil mode
+(evil-define-key 'normal neotree-mode-map (kbd "TAB") 'neotree-enter)
+(evil-define-key 'normal neotree-mode-map (kbd "SPC") 'neotree-quick-look)
+(evil-define-key 'normal neotree-mode-map (kbd "q") 'neotree-hide)
+(evil-define-key 'normal neotree-mode-map (kbd "RET") 'neotree-enter)
+(with-eval-after-load 'evil
+  (defalias #'forward-evil-word #'forward-evil-symbol))
+
+;;Exit insert mode by pressing j and then j quickly
+                                      ; reference: https://stackoverflow.com/questions/10569165/how-to-map-jj-to-esc-in-emacs-evil-mode
+(setq key-chord-two-keys-delay 0.4)
+(key-chord-define evil-insert-state-map "jj" 'evil-normal-state)
+(key-chord-mode 1)
+;; Add key-chord-mode to minor-mode-alist
+(if (not (assq 'key-chord-mode minor-mode-alist))
+    (setq minor-mode-alist
+          (cons '(key-chord-mode " KeyC ")
+                minor-mode-alist)))
+;; Ref: https://stackoverflow.com/questions/20882935/how-to-move-between-visual-lines-and-move-past-newline-in-evil-mode
+;; Make movement keys work like they should: instead of go to next
+;; logical line, pressing 'j' leads to the next visual line
+(define-key evil-normal-state-map (kbd "<remap> <evil-next-line>") 'evil-next-visual-line)
+(define-key evil-normal-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
+(define-key evil-motion-state-map (kbd "<remap> <evil-next-line>") 'evil-next-visual-line)
+(define-key evil-motion-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
+                                      ; Make horizontal movement cross lines
+(setq-default evil-cross-lines t)
+
+(defun my-langtool-config ()
+  ;; Check grammar after saving a text file with LanguageTools
+  ;; https://alhassy.github.io/init/
+  ;; (use-package langtool
+  ;;   :config
+  ;;   (setq langtool-language-tool-jar
+  ;;         "~/local/LanguageTool-4.8/languagetool-commandline.jar")
+  ;;   (setq langtool-default-language "en-US")
+  ;;   )
+
+  ;; https://simpleit.rocks/lisp/emacs/writing-in-emacs-checking-spelling-style-and-grammar/
+  (setq langtool-language-tool-jar "~/local/LanguageTool-4.8/languagetool-commandline.jar")
+  (require 'langtool)
+  ;; (add-hook 'markdown-mode-hook
+  ;;         (lambda ()
+  ;;            (add-hook 'after-save-hook 'langtool-check nil 'make-it-local)))
+  ;; (add-hook 'org-mode-hook
+  ;;         (lambda ()
+  ;;            (add-hook 'after-save-hook 'langtool-check nil 'make-it-local)))
+
+  ;; Quickly check, correct, then clean up /region/ with M-^
+  (add-hook 'langtool-error-exists-hook
+            (lambda ()
+              (langtool-correct-buffer)
+              (langtool-check-done)
+              ))
+
+  ;; ;; (global-set-key "\M-^" 'langtool-check)
+  ;; (global-set-key "\C-x4w" 'langtool-check)
+  ;; (global-set-key "\C-x4W" 'langtool-check-done)
+  ;; (global-set-key "\C-x4l" 'langtool-switch-default-language)
+  ;; (global-set-key "\C-x44" 'langtool-show-message-at-point)
+  ;; (global-set-key "\C-x4c" 'langtool-correct-buffer)
+
+  (global-set-key "\C-cgw" 'langtool-check)
+  (global-set-key "\C-cgW" 'langtool-check-done)
+  (global-set-key "\C-cgc" 'langtool-correct-buffer)
+  (global-set-key "\C-cgn" 'langtool-goto-next-error)
+  (global-set-key "\C-cgp" 'langtool-goto-previous-error)
+  ;; (global-set-key "\C-x4l" 'langtool-switch-default-language)
+  ;; (global-set-key "\C-x44" 'langtool-show-message-at-point)
+
   )
 
 (defun my-flyspell-config ()
@@ -183,148 +528,6 @@ applying this config. "
   (add-hook 'prog-mode-hook 'flyspell-prog-mode)
   )
 
-(defun my-evil-config ()
-  (add-to-list 'load-path "~/.emacs.d/evil")
-  ;; This should give you org-mode Tab functionality back. Ref:
-  ;; https://stackoverflow.com/questions/22878668/emacs-org-mode-evil-mode-tab-key-not-working
-  ;; (setq evil-want-C-i-jump nil)
-  (require 'evil)
-  (evil-mode 1)
-  ;; Use neotree with evil mode
-  (evil-define-key 'normal neotree-mode-map (kbd "TAB") 'neotree-enter)
-  (evil-define-key 'normal neotree-mode-map (kbd "SPC") 'neotree-quick-look)
-  (evil-define-key 'normal neotree-mode-map (kbd "q") 'neotree-hide)
-  (evil-define-key 'normal neotree-mode-map (kbd "RET") 'neotree-enter)
-  (with-eval-after-load 'evil
-    (defalias #'forward-evil-word #'forward-evil-symbol))
-  ;;Exit insert mode by pressing j and then j quickly
-					; reference: https://stackoverflow.com/questions/10569165/how-to-map-jj-to-esc-in-emacs-evil-mode
-  (setq key-chord-two-keys-delay 0.4)
-  (key-chord-define evil-insert-state-map "jj" 'evil-normal-state)
-  (key-chord-mode 1)
-  ;; Add key-chord-mode to minor-mode-alist
-  (if (not (assq 'key-chord-mode minor-mode-alist))
-      (setq minor-mode-alist
-	    (cons '(key-chord-mode " KeyC ")
-		  minor-mode-alist)))
-  ;; Ref: https://stackoverflow.com/questions/20882935/how-to-move-between-visual-lines-and-move-past-newline-in-evil-mode
-  ;; Make movement keys work like they should: instead of go to next
-  ;; logical line, pressing 'j' leads to the next visual line
-  (define-key evil-normal-state-map (kbd "<remap> <evil-next-line>") 'evil-next-visual-line)
-  (define-key evil-normal-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
-  (define-key evil-motion-state-map (kbd "<remap> <evil-next-line>") 'evil-next-visual-line)
-  (define-key evil-motion-state-map (kbd "<remap> <evil-previous-line>") 'evil-previous-visual-line)
-					; Make horizontal movement cross lines
-  (setq-default evil-cross-lines t)
-  )
-
-(defun my-org-config ()
-  ;; Enable Org mode
-  (require 'org)
-  ;; Make Org mode work with files ending in .org
-  ;; (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
-  ;; The above is the default in recent emacs
-  (setq truncate-lines 'nil)
-  (defun my-org-mode-config ()
-    (local-set-key "\M-n" 'outline-next-visible-heading)
-    (local-set-key "\M-p" 'outline-previous-visible-heading)
-    ;; table
-    (local-set-key "\C-\M-w" 'org-table-copy-region)
-    (local-set-key "\C-\M-y" 'org-table-paste-rectangle)
-    (local-set-key "\C-\M-l" 'org-table-sort-lines)
-    ;; display images
-    (local-set-key "\M-I" 'org-toggle-iimage-in-org)
-    ;; TODOlist
-    (local-set-key (kbd "\C-c t") 'org-todo)
-    ;; fix tab
-    (local-set-key "\C-y" 'yank)
-    (local-set-key "\M-h" 'windmove-left)
-    (local-set-key (kbd "C-c c") 'org-capture)
-    (local-set-key (kbd "C-c a") 'org-agenda)
-    (local-set-key "\C-cl" 'grg-store-link)
-    (local-set-key "\C-cb" 'org-switchb)
-    )
-  (add-hook 'org-mode-hook 'my-org-mode-config)
-  (evil-define-key 'normal org-mode-map (kbd "SPC") 'org-todo)
-  ;; https://orgmode.org/manual/Conflicts.html
-  ;; Make windmove work in Org mode:
-  (add-hook 'org-shiftup-final-hook 'windmove-up)
-  (add-hook 'org-shiftleft-final-hook 'windmove-left)
-  (add-hook 'org-shiftdown-final-hook 'windmove-down)
-  (add-hook 'org-shiftright-final-hook 'windmove-right)
-  (define-key org-mode-map (kbd "M-h") nil) ;; org conflicts
-  (define-key org-mode-map (kbd "M-h") 'windmove-left) ;; org conflicts
-  (setq org-startup-folded nil)
-  ;; <tab> for 'indent-for-tab-command'
-  ;; (evil-define-key 'normal org-mode-map (kbd "SPC") #'org-cycle)
-  (evil-define-key 'insert org-mode-map (kbd "C-t") #'indent-for-tab-command)
-  ;; org compile python
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((python . t)))
-  (setq word-wrap 'nil)
-
-  ;; ;; org-agenda
-  ;; (setq org-agenda-files (quote ("/Users/chongchonghe/TODOs.org")))
-  ;; (setq org-default-priority ?A)
-  ;; ;;set colours for priorities
-  ;; ;; (setq org-priority-faces '((?A . (:foreground "#F0DFAF" :weight bold))
-  ;; ;;                            (?B . (:foreground "LightSteelBlue"))
-  ;; ;;                            (?C . (:foreground "OliveDrab"))))
-  ;; ;;open agenda in current window
-  ;; (setq org-agenda-window-setup (quote current-window))
-  ;; set key for agenda
-  ;; (require 'org-projectile)
-  ;; (setq org-projectile-projects-file "/Users/chongchonghe/TODOs.org")
-  ;; (push (org-projectile-project-todo-entry) org-capture-templates)
-  ;; (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
-  ;; (global-set-key (kbd "C-c c") 'org-capture)
-  ;; ;; (global-set-key (kbd "C-c n p") 'org-projectile-project-todo-completing-read)
-  ;; (global-set-key (kbd "C-c a") 'org-agenda)
-  (setq org-agenda-files "~/Dropbox/notes/agenda.org")
-  (setq org-default-notes-file "~/Dropbox/notes/work.org")
-  (use-package org-projectile
-    :bind (("C-c n p" . org-projectile-project-todo-completing-read)
-	   ;; ("C-c c" . org-capture)
-	   ("C-c a" . org-agenda)
-	   )
-    :config
-    (progn
-      ;; (setq org-projectile-projects-file "~/Dropbox/notes/tasks.org")
-      (setq org-projectile-projects-file "~/Dropbox/notes/work.org")
-      (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
-      (push (org-projectile-project-todo-entry) org-capture-templates))
-    :ensure t)
-  ;; (setq org-capture-templates
-  ;; 	'(("g" "General todo" entry (file+headline "/Users/chongchonghe/tasks.org" "Tasks")
-  ;; 	   "* TODO [#B] %?")
-  ;; 	  ("t" "Task" entry (file+headline "" "Tasks")
-  ;; 	   "* TODO %?\n  %u\n  %a")
-  ;; 	  )
-  ;; 	)
-  ;; Exporting to LaTeX and PDF, formatting
-  ;; http://pragmaticemacs.com/emacs/org-mode-basics-v-exporting-your-notes/
-  (with-eval-after-load 'ox-latex
-    (add-to-list 'org-latex-classes
-		 '("bjmarticle"
-		   "\\documentclass{article}
-\\usepackage[utf8]{inputenc}
-\\usepackage[T1]{fontenc}
-\\usepackage{graphicx}
-\\usepackage{longtable}
-\\usepackage{hyperref}
-\\usepackage{natbib}
-\\usepackage{amssymb}
-\\usepackage{amsmath}
-\\usepackage{geometry}
-\\geometry{a4paper,margin=0.5in,marginparsep=7pt, marginparwidth=.6in}"
-		   ("\\section{%s}" . "\\section*{%s}")
-		   ("\\subsection{%s}" . "\\subsection*{%s}")
-		   ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-		   ("\\paragraph{%s}" . "\\paragraph*{%s}")
-		   ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
-  )
-
 (defun my-hs-config ()
   ;; (hs-minor-mode 1)
   (defun my-hideshow-config ()
@@ -340,21 +543,21 @@ applying this config. "
   (evil-define-key 'normal hs-minor-mode-map (kbd "SPC") 'hs-toggle-hiding)
   )
 
-(defun my-folding-mode-config ()
-  ;; https://www.emacswiki.org/emacs/FoldingMode#toc6
-  (setq folding-default-keys-function
-	'folding-bind-backward-compatible-keys)
-  (if (load "folding" 'nomessage 'noerror)
-      (folding-mode-add-find-file-hook))
+;; (defun my-folding-mode-config ()
+;;   ;; https://www.emacswiki.org/emacs/FoldingMode#toc6
+;;   (setq folding-default-keys-function
+;;         'folding-bind-backward-compatible-keys)
+;;   (if (load "folding" 'nomessage 'noerror)
+;;       (folding-mode-add-find-file-hook))
 
-  ;; The following is included in the default
-  (folding-add-to-marks-list 'python-mode "#<<<" "#>>>" nil t)
-  (folding-add-to-marks-list 'LaTeX-mode "%{{{" "%}}}" nil t)
-  ;; (folding-add-to-marks-list 'emacs-list-mode ";;{{{" ";;}}}" nil t) ; default?
-  ;; (add-hook 'folding-mode
-  ;; 	    '(local-set-key (kbd "<F9>") (kbd "C-c @ C-q"))
-  ;; 	    )
-  )
+;;   ;; The following is included in the default
+;;   (folding-add-to-marks-list 'python-mode "#<<<" "#>>>" nil t)
+;;   (folding-add-to-marks-list 'LaTeX-mode "%{{{" "%}}}" nil t)
+;;   ;; (folding-add-to-marks-list 'emacs-list-mode ";;{{{" ";;}}}" nil t) ; default?
+;;   ;; (add-hook 'folding-mode
+;;   ;; 	    '(local-set-key (kbd "<F9>") (kbd "C-c @ C-q"))
+;;   ;; 	    )
+;;   )
 
 (defun my-python-config ()
   (elpy-enable)
@@ -368,7 +571,7 @@ applying this config. "
   ;;(require 'py-autopep8)
   ;; (add-hook 'elpy-mode-hook) ;;'py-autopep8-enable-on-save)
   (setq python-shell-interpreter "ipython"
-	python-shell-interpreter-args "--simple-prompt -i")
+        python-shell-interpreter-args "--simple-prompt -i")
   (define-key ein:notebook-mode-map (kbd "C-c C-x d")
     'ein:worksheet-delete-cell)
   ;; Autoinsert Python comments
@@ -388,27 +591,27 @@ applying this config. "
   ;; (setq jedi:complete-on-dot t)
   (setq elpy-rpc-ignored-buffer-size 204800)
   ;; https://emacs.stackexchange.com/questions/36721/evil-mode-interacting-with-python-el-invoking-skeletons
-  (setq python-skeleton-autoinsert 1)
+  (setq python-skeleton-autoinsert nil)
   ;; ref: https://www.webscalability.com/blog/2018/07/auto-insert-snippet-for-python-emacs/
   ;; insert python skeleton with auto-insert
   (eval-after-load 'autoinsert
     '(define-auto-insert
        '("\\.\\py\\'" . "python skeleton")
        '(""
-	 "#!/usr/bin/env python" \n
-	 "\"\"\" "
-	 (file-name-nondirectory (buffer-file-name)) \n \n
-	 "Author: Chong-Chong He (che1234@umd.edu)" \n
-	 "Written on " (format-time-string "%a, %e %b %Y.") \n
-	 "\"\"\"" \n
-	 \n
-  	 "import numpy as np" \n
-  	 "import matplotlib.pyplot as plt" \n
-  	 \n
-	 > _ \n
-	 \n
-	 "if __name__ == '__main__':" \n
-	 "pass" \n \n)))
+         "#!/usr/bin/env python" \n
+         "\"\"\" "
+         (file-name-nondirectory (buffer-file-name)) \n \n
+         "Author: Chong-Chong He (che1234@umd.edu)" \n
+         "Written on " (format-time-string "%a, %e %b %Y.") \n
+         "\"\"\"" \n
+         \n
+         "import numpy as np" \n
+         "import matplotlib.pyplot as plt" \n
+         \n
+         > _ \n
+         \n
+         "if __name__ == '__main__':" \n
+         "pass" \n \n)))
   )
 
 (defun my-latex-config ()
@@ -423,9 +626,9 @@ applying this config. "
   (autoload 'helm-bibtex "helm-bibtex" "" t)
   (electric-pair-mode)
   (add-hook 'LaTeX-mode-hook
-	    '(lambda ()
-	       (define-key LaTeX-mode-map (kbd "$") 'self-insert-command)
-	       ))
+            '(lambda ()
+               (define-key LaTeX-mode-map (kbd "$") 'self-insert-command)
+               ))
   (add-hook 'LaTeX-mode-hook 'turn-on-reftex)
   ;; (setq reftex-plug-into-auctex t)
   (setq reftex-plug-into-AUCTeX t)
@@ -435,23 +638,23 @@ applying this config. "
   ;; (setq helm-bibtex-bibliography '("/Users/chongchonghe/Documents/bib_tmp.bib"))
   ;; Enable the clicking feature of the sync
   (add-hook 'LaTeX-mode-hook
-	    (lambda () (local-set-key (kbd "<S-s-mouse-1>") #'TeX-view))
-	    )
+            (lambda () (local-set-key (kbd "<S-s-mouse-1>") #'TeX-view))
+            )
   (setq TeX-PDF-mode t)	      ;; Compile documents to PDF by default
   ;; Use Skim as viewer, enable source <-> PDF sync
   ;; make latexmk available via C-c C-c
   ;; Note: SyncTeX is setup via ~/.latexmkrc (see below)
   (add-hook 'LaTeX-mode-hook (lambda ()
-			       (push
-				'("latexmk" "latexmk -pdf %s" TeX-run-TeX nil t :help "Run latexmk on file")
-				TeX-command-list)))
+                               (push
+                                '("latexmk" "latexmk -pdf %s" TeX-run-TeX nil t :help "Run latexmk on file")
+                                TeX-command-list)))
   (add-hook 'TeX-mode-hook '(lambda () (setq TeX-command-default "latexmk")))
   ;; use Skim as default pdf viewer
   ;; Skim's displayline is used for forward search (from .tex to .pdf)
   ;; option -b highlights the current line; option -g opens Skim in the background
   (setq TeX-view-program-selection '((output-pdf "PDF Viewer")))
   (setq TeX-view-program-list
-	'(("PDF Viewer" "/Applications/Skim.app/Contents/SharedSupport/displayline -b -g %n %o %b")))
+        '(("PDF Viewer" "/Applications/Skim.app/Contents/SharedSupport/displayline -b -g %n %o %b")))
 
   ;; start emacs in server mode so that skim can talk to it
   (server-start)
@@ -497,7 +700,7 @@ applying this config. "
   (setq TeX-save-query nil)
 
   (evil-define-key 'normal outline-minor-mode-map (kbd "SPC") 'evil-toggle-fold)
-					;(evil-define-key 'normal latex-mode-map (kbd ", l") 'TeX-command-master)
+                                        ;(evil-define-key 'normal latex-mode-map (kbd ", l") 'TeX-command-master)
   ;; (evil-define-key 'normal LaTeX-mode-map (kbd ", l") 'TeX-command-master)
   (evil-define-key 'normal LaTeX-mode-map (kbd ", l") 'TeX-command-run-all)
   (evil-define-key 'normal LaTeX-mode-map (kbd ", v") 'TeX-view)
@@ -511,220 +714,22 @@ applying this config. "
   (defun disable-auto-fill-mode () (auto-fill-mode -1))
   (add-hook 'LaTeX-mode-hook 'disable-auto-fill-mode)
   (add-hook 'LaTeX-mode-hook
-	    (lambda()
-	      (local-set-key [C-tab] 'TeX-complete-symbol)))
+            (lambda()
+              (local-set-key [C-tab] 'TeX-complete-symbol)))
   )
 
 (defun my-html-config ()
   ;; (setq sgml-quick-keys 'close)
   )
 
-(defun my-mu4e-config ()
-  ;; ;; My old offlineimap config
-  ;; (require 'mu4e)
-  ;; (setq mail-user-agent 'mu4e-user-agent)
-  ;; (setq mu4e-maildir "~/mail")
-  ;; ;; (setq mu4e-get-mail-command "offlineimap -u quiet")
-  ;; (setq mu4e-get-mail-command "offlineimap")
-  ;; (setq mu4e-update-interval 60)
-  ;; (setq mu4e-search-result-limit 5000)
-  ;; (setq mu4e-sent-folder   "/astro/f.Sent Messages")
-  ;; (setq mu4e-drafts-folder "/astro/f.Drafts")
-  ;; (setq mu4e-trash-folder  "/astro/f.Deleted Messages")
-  ;; (setq mu4e-refile-folder  "/astro/f.Archive")
-
-  ;; My new mbsync config
-  (when (eq system-type 'darwin)
-    (add-to-list
-     'load-path "/usr/local/Cellar/mu/1.2.0_1/share/emacs/site-lisp/mu/mu4e"))
-  (require 'mu4e)
-  (setq mail-user-agent 'mu4e-user-agent)
-  (setq mu4e-maildir (expand-file-name "~/mbsync2/umdastro"))
-  (setq mu4e-get-mail-command "mbsync -a")
-  ;; mu4e requires to specify drafts, sent, and trash dirs a smarter
-  ;; configuration allows to select directories according to the
-  ;; account (see mu4e page)
-  (setq mu4e-sent-folder    "/Sent Messages")
-  (setq mu4e-drafts-folder  "/Drafts")
-  (setq mu4e-trash-folder   "/Trash")
-  (setq mu4e-refile-folder  "/Archive")
-  ;; don't save message to Sent Messages, IMAP takes care of this
-  ;; (setq mu4e-sent-messages-behavior 'delete)
-  ;; Save message to Sent Messages, astro IMAP server fails to take care of this
-  (setq mu4e-sent-messages-behavior 'sent)
-  (setq mu4e-update-interval 60)
-  (setq mu4e-search-result-limit 500)
-  (setq mu4e-headers-results-limit 200)
-  (setq mu4e-change-filenames-when-moving t)
-  ;; (define-key mu4e-headers-mode-map (kbd "d") nil)
-  ;; tell mu4e to use w3m for html rendering.
-  ;; (setq mu4e-html2text-command "w3m -T text/html")
-  (setq mu4e-html2text-command "w3m -dump -T text/html -o display_link_number=true")
-  (setq mu4e-alert-interesting-mail-query "flag:unread AND maildir:/INBOX")
-  ;;https://emacs.stackexchange.com/questions/52487/mu4e-how-to-stop-the-unarchiving-of-entire-threads-when-new-message-arrives
-  (setq mu4e-headers-include-related nil)
-  (setq mu4e-maildir-shortcuts
-	'( ("/INBOX"               . ?i)
-	   ("/Sent Messages"       . ?s)
-	   ("/Trash"               . ?t)
-	   ("/Drafts"              . ?d)
-	   ("/Archive"             . ?a)
-	   ("/Reference"           . ?r)
-	   ;; ("/Waiting"             . ?w)
-	   ;; ("/Action Items"        . ?c)
-	   ))
-  ;; sending emails
-  (setq user-mail-address "chongchong@astro.umd.edu"
-	user-full-name  "ChongChong He"
-	smtpmail-default-smtp-server "gaia.astro.umd.edu"
-	;; smtpmail-local-domain "account1.example.com"
-	smtpmail-smtp-server "gaia.astro.umd.edu"
-	;; smtpmail-stream-type 'starttls
-	;; smtpmail-smtp-service 587
-	smtpmail-debug-info t)
-  ;; show images
-  (setq mu4e-view-show-images t)
-  ;; use imagemagick, if available
-  (when (fboundp 'imagemagick-register-types) (imagemagick-register-types))
-  ;; from: http://cachestocaches.com/2017/3/complete-guide-email-emacs-using-mu-and-/#getting-set-up-with-mu-and-offlineimap
-  (setq sendmail-program "/usr/local/bin/msmtp"
-	send-mail-function 'smtpmail-send-it
-	message-sendmail-f-is-evil t
-	message-sendmail-extra-arguments '("--read-envelope-from")
-	message-send-mail-function 'message-send-mail-with-sendmail)
-  ;; from: https://www.djcbsoftware.nl/code/mu/mu4e/Compose-hooks.html
-  ;; 1) messages to me@foo.example.com should be replied with From:me@foo.example.com
-  ;; 2) messages to me@bar.example.com should be replied with From:me@bar.example.com
-  ;; 3) all other mail should use From:me@cuux.example.com
-  (add-hook 'mu4e-compose-pre-hook
-	    (defun my-set-from-address ()
-	      "Set the From address based on the To address of the original."
-	      (let ((msg mu4e-compose-parent-message)) ;; msg is shorter...
-		(when msg
-		  (setq user-mail-address
-			(cond
-			 ((mu4e-message-contact-field-matches msg :to "chongchong@astro.umd.edu")
-			  "chongchong@astro.umd.edu")
-			 (t "chongchong@astro.umd.edu")))))))
-  ;; ;; Reply from the same address: not needed since astro is the default
-  ;; (defun my-mu4e-set-account ()
-  ;;   "Set the account for composing a message."
-  ;;   (if mu4e-compose-parent-message
-  ;;       (let ((mail (cdr (car (mu4e-message-field mu4e-compose-parent-message :to)))))
-  ;; 	(if (member mail mu4e-user-mail-address-list)
-  ;; 	    (setq user-mail-address mail)
-  ;;       (setq user-mail-address "chongchong@astro.umd.edu")))
-  ;;     ;; (helm :sources
-  ;;     ;;   `((name . "Select account: ")
-  ;;     ;;     (candidates . mu4e-user-mail-address-list)
-  ;;     ;;     (action . (lambda (candidate) (setq user-mail-address candidate)))))
-  ;;   )
-  ;; )
-  ;; spell check
-  (add-hook 'mu4e-compose-mode-hook
-	    (defun my-do-compose-stuff ()
-	      "My settings for message composition."
-	      (set-fill-column 72)
-	      (flyspell-mode)))
-  ;; don't keep message buffers around
-  (setq message-kill-buffer-on-exit t)
-  ;; Ref: https://emacs.stackexchange.com/questions/21723/how-can-i-delete-mu4e-drafts-on-successfully-sending-the-mail
-  (defun draft-auto-save-buffer-name-handler (operation &rest args)
-    "for `make-auto-save-file-name' set '.' in front of the file name; do nothing for other operations"
-    (if
-	(and buffer-file-name (eq operation 'make-auto-save-file-name))
-	(concat (file-name-directory buffer-file-name)
-		"."
-		(file-name-nondirectory buffer-file-name))
-      (let ((inhibit-file-name-handlers
-	     (cons 'draft-auto-save-buffer-name-handler
-		   (and (eq inhibit-file-name-operation operation)
-			inhibit-file-name-handlers)))
-	    (inhibit-file-name-operation operation))
-	(apply operation args))))
-  ;; automatically cc myself
-  (setq mu4e-compose-keep-self-cc t)
-  (setq mu4e-compose-dont-reply-to-self nil) ;; trying because the above doesn't work
-  ;; (setq mu4e-compose-dont-reply-to-self t) ; ?
-  ;; from: https://emacs.stackexchange.com/questions/52608/how-to-add-a-value-for-cc-or-reply-to-in-each-new-message/52609
-  (add-hook 'mu4e-compose-mode-hook
-	    (defun my-add-bcc ()
-	      "Add a cc: header."
-	      (save-excursion (message-add-header "cc: chongchong@astro.umd.edu\n"))))
-  ;;
-  (add-to-list 'file-name-handler-alist '("Drafts/cur/" . draft-auto-save-buffer-name-handler))
-  ;; the headers to show in the headers list -- a pair of a field
-  ;; and its width, with `nil' meaning 'unlimited'
-  ;; (better only use that for the last field.
-  ;; These are the defaults:
-  (setq mu4e-headers-fields
-	'( (:human-date    . 12)    ;; alternatively, use :human-date
-	   (:flags         . 6)
-	   (:from-or-to    . 25)
-	   (:cc            . 25)
-	   (:subject       . nil))) ;; alternatively, use :thread-subject
-  ;;
-  (setq message-citation-line-function 'message-insert-formatted-citation-line)
-  (setq message-citation-line-format "On %a, %b %d %Y, %f wrote:\n")
-  ;; (defun enable-mu4e-notification ()
-  ;;   ;; Desktop notifications for unread emails
-  ;;   ;; Choose the style you prefer for desktop notifications
-  ;;   ;; If you are on Linux you can use
-  ;;   ;; 1. notifications - Emacs lisp implementation of the Desktop Notifications API
-  ;;   ;; 2. libnotify     - Notifications using the `notify-send' program, requires `notify-send' to be in PATH
-  ;;   ;;
-  ;;   ;; On Mac OSX you can set style to
-  ;;   ;; 1. notifier      - Notifications using the `terminal-notifier' program, requires `terminal-notifier' to be in PATH
-  ;;   ;; 1. growl         - Notifications using the `growl' program, requires `growlnotify' to be in PATH
-  ;;   (add-hook 'after-init-hook #'mu4e-alert-enable-notifications)
-  ;;   (mu4e-alert-set-default-style 'notifier)
-  ;;   ;; Mode Line display of unread emails
-  ;;   ;; Display of the unread email count in the mode-line
-  ;;   ;; (add-hook 'after-init-hook #'mu4e-alert-enable-mode-line-display)
-  ;;   (add-hook 'after-init-hook #'mu4e-alert-disable-mode-line-display)
-  ;;   ;; adding the following snippet to your init file, will instruct
-  ;;   ;; mu4e-alert to only display the number of unread emails.
-  ;;   ;; (setq mu4e-alert-email-notification-types '(subjects))
-  ;;   (setq mu4e-alert-email-notification-types '(count))
-  ;;   )
-  ;; ;; Uncomment the following line and the defun above to enable notification
-  ;; (enable-mu4e-notification)
-  ;; ;; signatures.
-  ;; Ref: https://www.macs.hw.ac.uk/~rs46/posts/2014-11-16-mu4e-signatures.html
-  ;; (setq mu4e-compose-signature
-  ;;    "ChongChong He\n")
-  (defun my-mu4e-choose-signature ()
-    "Insert one of a number of sigs"
-    (interactive)
-    (let ((message-signature
-	   (mu4e-read-option "Signature:"
-			     '(("formal" .
-				(concat
-				 "Chong-Chong He\n"
-				 "PhD Student, Department of Astronomy\n"
-				 "University of Maryland, College Park\n"
-				 "E: chongchong@astro.umd.edu\n"
-				 "W: https://chongchonghe.github.io/"))
-			       ("informal" .
-				(concat
-				 "Best,\n"
-				 "ChongChong\n")
-				)
-			       ))))
-      (message-insert-signature)))
-  (add-hook 'mu4e-compose-mode-hook
-	    (lambda () (local-set-key (kbd "C-c C-w") #'my-mu4e-choose-signature)))
-  (message "This message appears in the echo area!")
-  )
-
 (defun my-CC++-config ()
   (setq-default c-basic-offset 4)
   (add-hook 'c-mode-common-hook
-	    (lambda ()
-	      (when (and (derived-mode-p 'c-mode 'c++-mode 'java-mode) (require 'ggtags nil 'noerror))
-		(ggtags-mode 1))
-	      (global-set-key (kbd "M-j") 'windmove-down)
-	      ))
+            (lambda ()
+              (when (and (derived-mode-p 'c-mode 'c++-mode 'java-mode) (require 'ggtags nil 'noerror))
+                (ggtags-mode 1))
+              (global-set-key (kbd "M-j") 'windmove-down)
+              ))
   ;; (define-skeleton 'c++-throwaway
   ;;   "Throwaway C skeleton"
   ;;   nil
@@ -743,34 +748,34 @@ applying this config. "
     '(define-auto-insert
        '("\\.\\(CC?\\|cc\\|cxx\\|cpp\\|c++\\)\\'" . "C++ skeleton")
        '("Short description: "
-	 "/*" \n
-	 (file-name-nondirectory (buffer-file-name))
-	 " -- " str \n
-	 " */" > \n \n
-	 "#include <iostream>" \n \n
-	 "using namespace std;" \n \n
-	 "int main()" \n
-	 -4 "{" \n
-	 > _ \n
-	 > _ "return 0;" \n
-	 -4 "}" > \n)))
+         "/*" \n
+         (file-name-nondirectory (buffer-file-name))
+         " -- " str \n
+         " */" > \n \n
+         "#include <iostream>" \n \n
+         "using namespace std;" \n \n
+         "int main()" \n
+         -4 "{" \n
+         > _ \n
+         > _ "return 0;" \n
+         -4 "}" > \n)))
   ;; https://www.emacswiki.org/emacs/AutoInsertMode
   (eval-after-load 'autoinsert
     '(define-auto-insert '("\\.c\\'" . "C skeleton")
        '(
-	 "Short description: "
-	 "/**\n * "
-	 (file-name-nondirectory (buffer-file-name))
-	 " -- " str \n
-	 "*" \n
-	 "* Written on " (format-time-string "%a, %e %b %Y.") \n
-	 "*/" > \n \n
-	 "#include <stdio.h>" \n
-	 \n
-	 "int main()" \n
-	 "{" > \n
-	 > _ \n
-	 "}" > \n)))
+         "Short description: "
+         "/**\n * "
+         (file-name-nondirectory (buffer-file-name))
+         " -- " str \n
+         "*" \n
+         "* Written on " (format-time-string "%a, %e %b %Y.") \n
+         "*/" > \n \n
+         "#include <stdio.h>" \n
+         \n
+         "int main()" \n
+         "{" > \n
+         > _ \n
+         "}" > \n)))
   )
 
 (defun my-fortran-config ()
@@ -802,32 +807,47 @@ applying this config. "
   (setq f90-smart-end 'blink)
   ;; Set Fortran and Fortran 90 mode for appropriate extensions
   (setq auto-mode-alist
-	(cons '("\\.F90$" . f90-mode) auto-mode-alist))
+        (cons '("\\.F90$" . f90-mode) auto-mode-alist))
   (setq auto-mode-alist
-	(cons '("\\.pf$" . f90-mode) auto-mode-alist))
+        (cons '("\\.pf$" . f90-mode) auto-mode-alist))
   (setq auto-mode-alist
-	(cons '("\\.fpp$" . f90-mode) auto-mode-alist))
+        (cons '("\\.fpp$" . f90-mode) auto-mode-alist))
   (setq auto-mode-alist
-	(cons '("\\.F$" . fortran-mode) auto-mode-alist))
+        (cons '("\\.F$" . fortran-mode) auto-mode-alist))
   ;; Swap Return and C-j in Fortran 90 mode
   (add-hook 'f90-mode-hook
-	    '(lambda ()
-	       (define-key f90-mode-map [return] 'f90-indent-new-line)
-	       (define-key f90-mode-map "\C-j" 'newline)
-	       (setq fill-column 100)
-	       (abbrev-mode)
-	       (setq-default indent-tabs-mode nil)
-	       (setq whitespace-line-column 100)
-	       (setq whitespace-style '(face tabs lines-tail empty))
-	       (whitespace-mode)
-	       ;; (add-to-list 'write-file-functions 'delete-trailing-whitespace)
-	       )
-	    )
+            '(lambda ()
+               (define-key f90-mode-map [return] 'f90-indent-new-line)
+               (define-key f90-mode-map "\C-j" 'newline)
+               (setq fill-column 100)
+               (abbrev-mode)
+               (setq-default indent-tabs-mode nil)
+               (setq whitespace-line-column 100)
+               (setq whitespace-style '(face tabs lines-tail empty))
+               (whitespace-mode)
+               ;; (add-to-list 'write-file-functions 'delete-trailing-whitespace)
+               )
+            )
   )
 
 (defun my-julia-config ()
   (add-to-list 'load-path "~/.emacs.d/julia-emacs")
   (require 'julia-mode)
+  )
+
+(defun my-yasnippet-config ()
+  (require 'yasnippet)
+  (setq yas-triggers-in-field t)
+;;; https://superuser.com/questions/1006188/can-emacs-be-set-up-to-display-python-code-in-python-mode-and-display-docstrings
+                                        ;(add-to-list 'load-path "~/.emacs.d/python-docstring-mode")
+                                        ;(require 'python-docstring)
+                                        ;(add-hook 'python-mode-hook (lambda () (python-docstring-mode t)))
+  (yas/initialize)
+  (yas/load-directory "~/.emacs.d/snippets")
+  (yas-minor-mode 1)
+  ;; (defun my/autoinsert-yas-expand()
+  ;;   "Replace text in yasnippet template."
+  ;;   (yas/expand-snippet (buffer-string) (point-min) (point-max)))
   )
 
 (defun my-other-config ()
@@ -877,20 +897,21 @@ applying this config. "
   ;; (set-face-attribute 'default nil :font "SF Mono 12")
   ;; (set-face-attribute 'default nil :font "Source Code Pro 14")
   ;; set font size
-  (set-face-attribute 'default (selected-frame) :height 150)
+  ;; (set-face-attribute 'default (selected-frame) :height 150)
+  (set-face-attribute 'default nil :height 150)
 
 ;;; right 2/3, two columns
-					;(set-face-attribute 'default (selected-frame) :height 122)
-					;(add-to-list 'default-frame-alist '(height . 71))
-					;(add-to-list 'default-frame-alist '(width . 177))
-					;(add-to-list 'default-frame-alist '(left . 784))
-					;(add-to-list 'default-frame-alist '(top . 0))
+                                        ;(set-face-attribute 'default (selected-frame) :height 122)
+                                        ;(add-to-list 'default-frame-alist '(height . 71))
+                                        ;(add-to-list 'default-frame-alist '(width . 177))
+                                        ;(add-to-list 'default-frame-alist '(left . 784))
+                                        ;(add-to-list 'default-frame-alist '(top . 0))
 
   ;; center, large, two columns
   ;; (set-face-attribute 'default (selected-frame) :height 122)
   (add-to-list 'default-frame-alist '(height . 68))
   (add-to-list 'default-frame-alist '(width . 180))
-					;(add-to-list 'default-frame-alist '(left . (- 0)))
+                                        ;(add-to-list 'default-frame-alist '(left . (- 0)))
   (add-to-list 'default-frame-alist '(right . 0))
   (add-to-list 'default-frame-alist '(top . 0))
 
@@ -912,28 +933,300 @@ applying this config. "
   )
 
 ;;;; Enable all the configs
-(my-general-config)
-(my-evil-config)
-(my-yasnippet-config)
-(my-neotree-config)
+;; (my-general-config)
+;; (my-evil-config)
+;; (my-neotree-config)
 (my-flyspell-config)
 (my-python-config)
-(my-org-config)
 (my-hs-config)
-(my-folding-mode-config)
+;; (my-folding-mode-config)
 (my-latex-config)
 (my-html-config)
-(my-mu4e-config)
+;; (my-mu4e-config)
 (my-CC++-config)
 (my-fortran-config)
 (my-julia-config)
+;; (my-yasnippet-config)
 (my-theme-config)
+(my-langtool-config)
 
 (defun test02 ()
   (global-set-key (kbd "<f8>") 'back-to-indentation)
   )
 (test02)
 
+(defun my-neotree-mode-config ()
+  "For use in 'neotree-mode-hook'."
+  (local-set-key (kbd "j") 'neotree-next-line)
+  (local-set-key (kbd "k") 'neotree-previous-line)
+  (local-set-key (kbd "C-j") 'neotree-change-root)
+  (local-set-key (kbd "C-k") 'neotree-select-up-node)
+  (define-key evil-normal-state-local-map (kbd "q") 'neotree-hide)
+  (define-key evil-normal-state-local-map (kbd "g") 'neotree-refresh)
+  (define-key evil-normal-state-local-map (kbd "A") 'neotree-stretch-toggle)
+  (define-key evil-normal-state-local-map (kbd "H") 'neotree-hidden-file-toggle)
+  )
+(add-hook 'neotree-mode-hook 'my-neotree-mode-config)
+
+(add-hook 'neotree-mode-hook (lambda ()
+  (define-key evil-motion-state-local-map (kbd "g") 'neotree-refresh)))
+
+;; org
+
+(require 'org)
+
+;; load shared .el followed by Emacs specific config
+;;(load-file "~/.my-elips/org.el")
+
+;; Make Org mode work with files ending in .org
+;; (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
+;; The above is the default in recent emacs
+;; (setq truncate-lines 'nil)
+
+(defun my-org-mode-config ()
+  (local-set-key "\M-n" 'outline-next-visible-heading)
+  (local-set-key "\M-p" 'outline-previous-visible-heading)
+  ;; table
+  (local-set-key "\C-\M-w" 'org-table-copy-region)
+  (local-set-key "\C-\M-y" 'org-table-paste-rectangle)
+  (local-set-key "\C-\M-l" 'org-table-sort-lines)
+  ;; display images
+  (local-set-key "\M-I" 'org-toggle-iimage-in-org)
+  ;; TODOlist
+  (local-set-key (kbd "\C-c t") 'org-todo)
+  ;; fix tab
+  (local-set-key "\C-y" 'yank)
+  (local-set-key "\M-h" 'windmove-left)
+  ;; (local-set-key (kbd "C-c c") 'org-capture)
+  ;; (local-set-key (kbd "C-c a") 'org-agenda)
+  (local-set-key "\C-cl" 'grg-store-link)
+  (local-set-key "\C-cb" 'org-switchb)
+  (setq-local truncate-lines 'nil)
+  (auto-fill-mode)
+  (org-indent-mode)
+  )
+(add-hook 'org-mode-hook 'my-org-mode-config)
+;; https://orgmode.org/manual/Conflicts.html
+;; Make windmove work in Org mode:
+(add-hook 'org-shiftup-final-hook 'windmove-up)
+(add-hook 'org-shiftleft-final-hook 'windmove-left)
+(add-hook 'org-shiftdown-final-hook 'windmove-down)
+(add-hook 'org-shiftright-final-hook 'windmove-right)
+(define-key org-mode-map (kbd "M-h") 'windmove-left) ;; org conflicts
+(setq org-startup-folded nil)
+;; <tab> for 'indent-for-tab-command'
+;; (evil-define-key 'normal org-mode-map (kbd "SPC") #'org-cycle)
+(evil-define-key 'insert org-mode-map (kbd "C-t") #'indent-for-tab-command)
+;; org compile python
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((python . t)))
+;; (setq word-wrap 'nil)
+(setq word-wrap 't)
+
+;; ; ;; org-agenda
+;; (use-package org-projectile
+;;   :bind (("C-c n p" . org-projectile-project-todo-completing-read)
+;; 	   ;; ("C-c c" . org-capture)
+;; 	   ;; ("C-c a" . org-agenda)
+;; 	   )
+;;   :config
+;;   (progn
+;;     (setq org-projectile-projects-file "~/Dropbox/orgfiles/tasks.org")
+;;     (setq org-agenda-files (append org-agenda-files (org-projectile-todo-files)))
+;;     (push (org-projectile-project-todo-entry) org-capture-templates))
+;;   :ensure t)
+
+(require 'org-mu4e)
+
+(require 'org-bullets)
+(add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+
+;; Exporting to LaTeX and PDF, formatting
+;; http://pragmaticemacs.com/emacs/org-mode-basics-v-exporting-your-notes/
+(with-eval-after-load 'ox-latex
+  (add-to-list 'org-latex-classes
+               '("bjmarticle"
+                 "\\documentclass{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage[T1]{fontenc}
+\\usepackage{graphicx}
+\\usepackage{longtable}
+\\usepackage{hyperref}
+\\usepackage{natbib}
+\\usepackage{amssymb}
+\\usepackage{amsmath}
+\\usepackage{geometry}
+\\geometry{a4paper,margin=0.5in,marginparsep=7pt, marginparwidth=.6in}"
+                 ("\\section{%s}" . "\\section*{%s}")
+                 ("\\subsection{%s}" . "\\subsection*{%s}")
+                 ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
+                 ("\\paragraph{%s}" . "\\paragraph*{%s}")
+                 ("\\subparagraph{%s}" . "\\subparagraph*{%s}"))))
+
+(setq org-descriptive-links nil)
+
+(global-set-key (kbd "C-c c") 'org-capture)
+(global-set-key (kbd "C-c a") 'org-agenda)
+(evil-define-key 'normal org-mode-map (kbd "t") 'org-todo)
+(setq org-image-actual-width nil)
+
+(with-eval-after-load 'org
+  (setq org-agenda-files "~/Dropbox/orgfiles/agenda.org")
+  (setq org-default-notes-file "~/Dropbox/orgfiles/todos.org")
+  (setq org-agenda-confirm-kill t)
+
+  ;;open agenda in current window
+  (setq org-agenda-window-setup (quote current-window))
+
+(setq org-capture-templates
+      '(
+        ("t" "Todo (without links)" entry (file+headline "" "Tasks")
+         "* TODO [#A] %?\n %U" :empty-lines-before 1)
+        ("a" "Tasks (with links)" entry (file+headline "" "Tasks")
+         "* TODO [#A] %?\n  %U\n  %a\n" :empty-lines 1)
+        ("n" "Notes" entry (file+headline "~/Dropbox/orgfiles/notes.org" "Notes")
+         "* %?\n  %U\n" :empty-lines 1)
+        ("i" "Ideas" entry (file+headline "~/Dropbox/orgfiles/notes.org" "Ideas")
+         "* %?\n  %u\n" :empty-lines-before 1)
+        ("f" "Followup" entry (file+headline "" "Followup (emails or tasks)")
+         "* FLUP [#B] %?\n  %U\n  %a\n" :empty-lines-before 1)
+        ("l" "Later" entry (file+headline "" "Later (emails or tasks)")
+         "* TODO [#D] %?\n  %U\n  %a\n" :empty-lines-before 1)
+        ;; ("g" "General todo" entry (file+headline "/Users/chongchonghe/tasks.org" "Tasks")
+        ;;  "* TODO [#B] %?\n %a" :empty-lines 1)
+        )
+      )
+
+(setq org-default-priority ?A)
+(setq org-highest-priority ?A)
+(setq org-lowest-priority ?D)
+;;set colours for priorities
+(setq org-priority-faces '((?A . (:foreground "#FF0000" :weight bold))
+                           (?B . (:foreground "#FFBF00"))
+                           (?C . (:foreground "#79DF46"))
+                           (?D . (:foreground "#00A2FF"))))
+;;Different bullets
+(setq org-bullets-bullet-list '("⚫" "◉" "◆" "▶" "◇"))
+;; (setq org-todo-keywords
+;;       '((sequence "TODO" "NEXT" "DOING" "FOLLOWUP" "|" "DONE" "CANCELLED")))
+;; (setq org-todo-keywords
+;;       '((sequence "TODO(t!)" "NEXT(n!)" "DOING(o!)" "FOLLOWUP(f!)" "|" "CANCELLED(c!)" "DONE(d!)")))
+(setq org-todo-keywords
+      '((sequence "TODO(t!)" "NEXT(n!)" "DOIN(o!)" "FLUP(f!)" "|" "CXLD(c!)" "DONE(d!)")))
+(setq org-todo-keyword-faces
+      '(("TODO" . org-warning)
+        ("DOIN" . (:foreground "yellow"))
+        ("FLUP" . (:foreground "magenta"))
+        ;; ("CANCELLED" . (:foreground "white" :background "#4d4d4d" :weight bold))
+        ("CXLD" . (:foreground "gray"))
+        ("NEXT" . "#008080")))
+)
+
+(setq org-refile-targets '((org-agenda-files :maxlevel . 2)))
+
+(setq reftex-default-bibliography '("~/Academics/Bib/He-StarCluster.bib"))
+
+;; see org-ref for use of these variables
+(setq org-ref-bibliography-notes "~/Dropbox/bibliography/notes.org"
+      org-ref-default-bibliography '("~/Academics/Bib/He-StarCluster.bib")
+      org-ref-pdf-directory "~/Academics/papers/_org-ref/")
+
+(setq bibtex-completion-bibliography "~/Academics/Bib/He-StarCluster.bib"
+      bibtex-completion-library-path "~/Academics/papers/_org-ref/"
+      bibtex-completion-notes-path "~/Dropbox/orfiles/helm-bibtex-notes")
+
+;; open pdf with system pdf viewer (works on mac)
+(setq bibtex-completion-pdf-open-function
+  (lambda (fpath)
+    (start-process "open" "*open*" "open" fpath)))
+
+;; alternative
+;; (setq bibtex-completion-pdf-open-function 'org-open-file)
+
+(setq org-use-sub-superscripts '{})
+
+(defvar mv-iframe-format
+  ;; You may want to change your width and height.
+  (concat "<video"
+          " height=\"500\""
+          " style=\"display:block; margin: 0 auto;\" controls>"
+          " <source"
+          " src=\"%s\""
+          " type=\"video/mp4\">"
+          "</video>"))
+
+(org-add-link-type
+ "mv"
+ (lambda (handle)
+   (browse-url
+    (concat "https://www.youtube.com/embed/"
+            handle)))
+ (lambda (path desc backend)
+   (cl-case backend
+     (html (format mv-iframe-format
+                   path (or desc "")))
+     (latex (format "\href{%s}{%s}"
+                    path (or desc "video"))))))
+
+(setq org-src-tab-acts-natively t)
+
+(setq org-publish-project-alist
+      '(("org"
+         :base-directory "~/Documents/org/"
+         :publishing-directory "~/Documents/publish/"
+         :section-numbers nil
+         :table-of-contents nil
+         :publishing-function org-html-publish-to-html
+         ;; :publishing-function 'org-publish-org-to-html
+         :style "<link rel=\"stylesheet\"
+                href=\"../style/style.css\"
+                type=\"text/css\"/>")))
+
+(require 'pdf-occur)
+(use-package pdf-tools
+  :ensure t
+  :mode ("\\.pdf$" . pdf-view-mode)
+  :config
+  (pdf-tools-install)
+
+  (let ((foreground-orig (car pdf-view-midnight-colors)))
+    (setq pdf-view-midnight-colors
+          (cons "white" "black")))
+
+  (with-eval-after-load 'evil
+    (progn
+      (add-to-list 'evil-emacs-state-modes 'pdf-outline-buffer-mode)
+      (add-to-list 'evil-emacs-state-modes 'pdf-view-mode))))
+
+;; (define-key pdf-occur-global-minor-mode-map (kbd "RET") 'pdf-occur-goto-occurance)
+
+(use-package org-pdfview
+  :ensure t)
+
+(defun ansi-term-post (&rest _)
+  "configuration settings for ansi-term"
+  (evil-local-mode -1))
+
+(use-package helm
+  :ensure t
+  :bind
+  ("M-x" . helm-M-x)
+  ("C-x C-f" . helm-find-files)
+  ;; (global-set-key (kbd "M-x") 'helm-M-x)
+  :config
+  (require 'helm-config)
+  (helm-mode 1)
+  (setq helm-split-window-inside-p t
+        helm-move-to-line-cycle-in-source t)
+  (setq helm-autoresize-max-height 0)
+  (setq helm-autoresize-min-height 20)
+  (helm-autoresize-mode 1)
+  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+  (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
+  (define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+
+  )
 
 ;; (custom-set-variables
 ;;  ;; custom-set-variables was added by Custom.
@@ -1021,10 +1314,11 @@ applying this config. "
  '(custom-safe-themes
    (quote
     ("d677ef584c6dfc0697901a44b885cc18e206f05114c8a3b7fde674fce6180879" default)))
+ '(org-export-backends (quote (ascii beamer html icalendar latex man md odt)))
  '(org-startup-truncated nil)
  '(package-selected-packages
    (quote
-    (org-projectile-helm org-projectile vimrc-mode julia-mode org gruvbox-theme magit mu4e-alert helm solarized-theme htmlize ein jedi key-chord popwin yasnippet goto-last-change evil auctex evil-visual-mark-mode markdown-mode flycheck neotree elpy)))
+    (langtool mu4e-maildirs-extension vimrc-mode julia-mode org gruvbox-theme magit mu4e-alert helm solarized-theme htmlize ein jedi key-chord popwin yasnippet goto-last-change evil auctex evil-visual-mark-mode markdown-mode flycheck neotree elpy)))
  '(send-mail-function (quote mailclient-send-it)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
